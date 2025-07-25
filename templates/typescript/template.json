@@ -1,0 +1,222 @@
+{
+  "name": "typescript",
+  "description": "TypeScript project with memory bank system",
+  "version": "1.0.0",
+  "files": [
+    {
+      "path": "projectBrief.md",
+      "content": "# Project Brief\n\n## Overview\n{{projectName}} is a {{projectType}} project that {{projectDescription}}.\n\n## Core Requirements\n- {{requirement1}}\n- {{requirement2}}\n- {{requirement3}}\n\n## Success Criteria\n- {{success1}}\n- {{success2}}\n- {{success3}}"
+    },
+    {
+      "path": "productContext.md",
+      "content": "# Product Context\n\n## Problem Statement\n{{problemStatement}}\n\n## Solution Overview\n{{solutionOverview}}\n\n## User Experience Goals\n- {{uxGoal1}}\n- {{uxGoal2}}\n- {{uxGoal3}}"
+    },
+    {
+      "path": "systemPatterns.md",
+      "content": "# System Patterns\n\n## Architecture Overview\n{{architectureOverview}}\n\n## Key Design Patterns\n- {{pattern1}}\n- {{pattern2}}\n- {{pattern3}}\n\n## Component Relationships\n{{componentRelationships}}"
+    },
+    {
+      "path": "techContext.md",
+      "content": "# Tech Context\n\n## Technology Stack\n- **Language**: TypeScript\n- **Runtime**: Node.js\n- **Framework**: {{framework}}\n- **Build Tool**: {{buildTool}}\n\n## Development Setup\n{{devSetup}}\n\n## Dependencies\n{{dependencies}}"
+    },
+    {
+      "path": "activeContext.md",
+      "content": "# Active Context\n\n## Current Work Focus\n{{currentFocus}}\n\n## Recent Changes\n{{recentChanges}}\n\n## Next Steps\n{{nextSteps}}\n\n## Active Decisions\n{{activeDecisions}}"
+    },
+    {
+      "path": "progress.md",
+      "content": "# Progress\n\n## What Works\n{{whatWorks}}\n\n## What's Left to Build\n{{whatsLeft}}\n\n## Current Status\n{{currentStatus}}\n\n## Known Issues\n{{knownIssues}}"
+    }
+  ],
+  "options": [
+    {
+      "name": "projectName",
+      "type": "string",
+      "description": "Name of the project",
+      "required": true
+    },
+    {
+      "name": "projectType",
+      "type": "select",
+      "description": "Type of project",
+      "choices": ["Web Application", "CLI Tool", "Library", "API", "Other"],
+      "default": "Web Application"
+    },
+    {
+      "name": "projectDescription",
+      "type": "string",
+      "description": "Brief description of the project",
+      "required": true
+    },
+    {
+      "name": "framework",
+      "type": "select",
+      "description": "Primary framework",
+      "choices": ["React", "Vue", "Angular", "Express", "Next.js", "None"],
+      "default": "React"
+    },
+    {
+      "name": "buildTool",
+      "type": "select",
+      "description": "Build tool",
+      "choices": ["Webpack", "Vite", "Rollup", "tsc", "Other"],
+      "default": "Vite"
+    },
+    {
+      "name": "requirement1",
+      "type": "string",
+      "description": "Core requirement 1",
+      "default": "Implement core functionality"
+    },
+    {
+      "name": "requirement2",
+      "type": "string",
+      "description": "Core requirement 2",
+      "default": "Ensure code quality and maintainability"
+    },
+    {
+      "name": "requirement3",
+      "type": "string",
+      "description": "Core requirement 3",
+      "default": "Provide excellent user experience"
+    },
+    {
+      "name": "success1",
+      "type": "string",
+      "description": "Success criteria 1",
+      "default": "All features work as expected"
+    },
+    {
+      "name": "success2",
+      "type": "string",
+      "description": "Success criteria 2",
+      "default": "Code passes all tests"
+    },
+    {
+      "name": "success3",
+      "type": "string",
+      "description": "Success criteria 3",
+      "default": "User feedback is positive"
+    },
+    {
+      "name": "problemStatement",
+      "type": "string",
+      "description": "Problem this project solves",
+      "default": "Addresses a specific need in the target domain"
+    },
+    {
+      "name": "solutionOverview",
+      "type": "string",
+      "description": "Overview of the solution",
+      "default": "Provides a comprehensive solution using modern technologies"
+    },
+    {
+      "name": "uxGoal1",
+      "type": "string",
+      "description": "User experience goal 1",
+      "default": "Intuitive and easy to use"
+    },
+    {
+      "name": "uxGoal2",
+      "type": "string",
+      "description": "User experience goal 2",
+      "default": "Fast and responsive"
+    },
+    {
+      "name": "uxGoal3",
+      "type": "string",
+      "description": "User experience goal 3",
+      "default": "Accessible to all users"
+    },
+    {
+      "name": "architectureOverview",
+      "type": "string",
+      "description": "Architecture overview",
+      "default": "Modern, scalable architecture following best practices"
+    },
+    {
+      "name": "pattern1",
+      "type": "string",
+      "description": "Design pattern 1",
+      "default": "Component-based architecture"
+    },
+    {
+      "name": "pattern2",
+      "type": "string",
+      "description": "Design pattern 2",
+      "default": "Separation of concerns"
+    },
+    {
+      "name": "pattern3",
+      "type": "string",
+      "description": "Design pattern 3",
+      "default": "Clean code principles"
+    },
+    {
+      "name": "componentRelationships",
+      "type": "string",
+      "description": "Component relationships",
+      "default": "Well-defined interfaces and clear data flow"
+    },
+    {
+      "name": "devSetup",
+      "type": "string",
+      "description": "Development setup instructions",
+      "default": "Standard Node.js development environment with TypeScript"
+    },
+    {
+      "name": "dependencies",
+      "type": "string",
+      "description": "Key dependencies",
+      "default": "Core framework and essential development tools"
+    },
+    {
+      "name": "currentFocus",
+      "type": "string",
+      "description": "Current work focus",
+      "default": "Initial project setup and core feature development"
+    },
+    {
+      "name": "recentChanges",
+      "type": "string",
+      "description": "Recent changes",
+      "default": "Project initialization and basic structure"
+    },
+    {
+      "name": "nextSteps",
+      "type": "string",
+      "description": "Next steps",
+      "default": "Implement core features and establish development workflow"
+    },
+    {
+      "name": "activeDecisions",
+      "type": "string",
+      "description": "Active decisions",
+      "default": "Technology stack and architecture choices"
+    },
+    {
+      "name": "whatWorks",
+      "type": "string",
+      "description": "What currently works",
+      "default": "Project structure and basic setup"
+    },
+    {
+      "name": "whatsLeft",
+      "type": "string",
+      "description": "What's left to build",
+      "default": "Core functionality and features"
+    },
+    {
+      "name": "currentStatus",
+      "type": "string",
+      "description": "Current project status",
+      "default": "In development - initial setup phase"
+    },
+    {
+      "name": "knownIssues",
+      "type": "string",
+      "description": "Known issues",
+      "default": "None at this stage"
+    }
+  ]
+} 
