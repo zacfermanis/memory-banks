@@ -17,7 +17,7 @@ module.exports = {
       varsIgnorePattern: '^_',
       ignoreRestSiblings: true
     }],
-    'no-console': 'warn',
+    'no-console': 'off', // CLI tool needs console output
     'eqeqeq': ['error', 'always'],
     'curly': ['error', 'all'],
     'no-duplicate-imports': 'error',

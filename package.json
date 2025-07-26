@@ -1,7 +1,7 @@
 {
   "name": "memory-bank",
   "version": "1.0.0",
-  "description": "A simple CLI tool to initialize memory bank projects",
+  "description": "A CLI tool to initialize memory bank projects with AI-powered development documentation and cursor rules for TypeScript/React and Lua/Love2D development",
   "main": "dist/index.js",
   "bin": {
     "init-memory-bank": "dist/index.js"
@@ -11,20 +11,32 @@
     "Lua",
     "Web",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "jest.config.js",
+    "tsconfig.json"
   ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "lint": "eslint src --ext .ts",
-    "clean": "rm -rf dist"
+    "lint:fix": "eslint src --ext .ts --fix",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
   },
   "keywords": [
     "memory-bank",
     "cli",
     "development",
-    "documentation"
+    "documentation",
+    "cursor",
+    "ai",
+    "productivity",
+    "typescript",
+    "lua",
+    "web-development"
   ],
   "author": "Zac Fermanis <zacfermanis@gmail.com>",
   "license": "MIT",
@@ -46,11 +58,17 @@
     "@typescript-eslint/eslint-plugin": "^6.13.0",
     "@typescript-eslint/parser": "^6.13.0",
     "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-prettier": "^5.5.3",
     "jest": "^29.7.0",
+    "prettier": "^3.6.2",
     "ts-jest": "^29.4.0",
     "typescript": "^5.3.0"
   },
   "engines": {
     "node": ">=16.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
