@@ -299,12 +299,16 @@ export class TemplateRenderer {
     }
 
     // Check for malformed conditional syntax (excluding valid if/endif)
-    const allConditionalBlocks = (template.match(/\{%[^%]*%\}/g) || []) as string[];
-    const validIfBlocks = (template.match(/\{%\s*if\s+[^%]*%\}/g) || []) as string[];
-    const validEndifBlocks = (template.match(/\{%\s*endif\s*%\}/g) || []) as string[];
+    const allConditionalBlocks = (template.match(/\{%[^%]*%\}/g) ||
+      []) as string[];
+    const validIfBlocks = (template.match(/\{%\s*if\s+[^%]*%\}/g) ||
+      []) as string[];
+    const validEndifBlocks = (template.match(/\{%\s*endif\s*%\}/g) ||
+      []) as string[];
 
     const malformedBlocks = allConditionalBlocks.filter(
-      block => !validIfBlocks.includes(block) && !validEndifBlocks.includes(block)
+      block =>
+        !validIfBlocks.includes(block) && !validEndifBlocks.includes(block)
     );
 
     if (malformedBlocks.length > 0) {
