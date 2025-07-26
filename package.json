@@ -14,7 +14,7 @@
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "prepare": "npm run build",
-    "test": "jest",
+    "test": "node --max-old-space-size=4096 ./node_modules/jest/bin/jest.js",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:cross-platform": "npm run validate:cli && memory-banks init --dry-run --yes --output-dir \"./test-output\"",

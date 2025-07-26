@@ -4,6 +4,11 @@
 // Set up test environment
 process.env['NODE_ENV'] = 'test';
 
+// Enable garbage collection for performance tests
+if (global.gc) {
+  global.gc();
+}
+
 // Mock console methods to avoid noise in tests
 const originalConsole = { ...console };
 beforeAll(() => {

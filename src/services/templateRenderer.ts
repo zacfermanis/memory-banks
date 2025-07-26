@@ -75,8 +75,11 @@ export class TemplateRenderer {
       loopIterations++;
     }
 
-    // TASK-029: Create string operation optimization
-    result = this.optimizeStringOperations(result, variables, options);
+    // TASK-029: Create string operation optimization - always enable variable substitution
+    result = this.optimizeStringOperations(result, variables, {
+      ...options,
+      optimizeStrings: true,
+    });
 
     // TASK-029: Add memory usage optimization
     if (options.enableProfiling) {
@@ -191,7 +194,9 @@ export class TemplateRenderer {
       while (searchIdx < template.length) {
         const nextFor = template.indexOf('{% for ', searchIdx);
         const nextEnd = template.indexOf('{% endfor %}', searchIdx);
-        if (nextEnd === -1) break;
+        if (nextEnd === -1) {
+          break;
+        }
         if (nextFor !== -1 && nextFor < nextEnd) {
           nest++;
           searchIdx = nextFor + 1;
@@ -209,7 +214,10 @@ export class TemplateRenderer {
         break;
       }
       const loopBody = template.slice(forTagEnd + 2, loopEnd);
-      const collection = this.getNestedValueOptimized(variables, collectionPath);
+      const collection = this.getNestedValueOptimized(
+        variables,
+        collectionPath
+      );
       if (!Array.isArray(collection)) {
         cursor = loopEnd + 12;
         continue;
@@ -226,8 +234,17 @@ export class TemplateRenderer {
           first: index === 0,
           length: collection.length,
         };
-        let processed = this.processLoops(loopBody, loopContext, _options, depth + 1);
-        processed = this.processConditionalsOptimized(processed, loopContext, _options);
+        let processed = this.processLoops(
+          loopBody,
+          loopContext,
+          _options,
+          depth + 1
+        );
+        processed = this.processConditionalsOptimized(
+          processed,
+          loopContext,
+          _options
+        );
         processed = this.replaceVariablesOriginal(processed, loopContext);
         result += processed;
       }
@@ -284,13 +301,9 @@ export class TemplateRenderer {
   private optimizeStringOperations(
     template: string,
     variables: Record<string, any>,
-    options: RenderOptions = {}
+    _options: RenderOptions = {}
   ): string {
-    if (!options.optimizeStrings) {
-      // Use original method if optimization is disabled
-      return this.replaceVariablesOriginal(template, variables);
-    }
-
+    // Always use optimized method for better performance
     // Pre-compile variable patterns for better performance
     const variablePatterns = this.precompileVariablePatterns(template);
 
@@ -564,8 +577,10 @@ export class TemplateRenderer {
     if (rightValue === undefined) {
       // Try to parse as string literal (remove quotes if present)
       const trimmed = rightOperand.trim();
-      if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || 
-          (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+      if (
+        (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+        (trimmed.startsWith("'") && trimmed.endsWith("'"))
+      ) {
         rightValue = trimmed.slice(1, -1);
       } else {
         rightValue = trimmed;

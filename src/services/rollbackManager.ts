@@ -44,10 +44,13 @@ export class RollbackManager {
   /**
    * TASK-032: Create file operation rollback
    */
-  async createFileBackup(filePath: string, operation: 'create' | 'update' | 'delete'): Promise<RollbackOperation> {
+  async createFileBackup(
+    filePath: string,
+    operation: 'create' | 'update' | 'delete'
+  ): Promise<RollbackOperation> {
     const operationId = this.generateOperationId();
     const backupPath = await this.createBackupPath(filePath, operationId);
-    
+
     let originalContent: string | undefined;
     let backupCreated = false;
 
@@ -82,17 +85,22 @@ export class RollbackManager {
       this.activeOperations.set(operationId, rollbackOperation);
       return rollbackOperation;
     } catch (error) {
-      throw new Error(`Failed to create file backup: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create file backup: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * TASK-032: Add directory operation rollback
    */
-  async createDirectoryBackup(dirPath: string, operation: 'create' | 'delete'): Promise<RollbackOperation> {
+  async createDirectoryBackup(
+    dirPath: string,
+    operation: 'create' | 'delete'
+  ): Promise<RollbackOperation> {
     const operationId = this.generateOperationId();
     const backupPath = await this.createBackupPath(dirPath, operationId);
-    
+
     let originalStructure: string[] = [];
 
     try {
@@ -120,20 +128,29 @@ export class RollbackManager {
       this.activeOperations.set(operationId, rollbackOperation);
       return rollbackOperation;
     } catch (error) {
-      throw new Error(`Failed to create directory backup: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create directory backup: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * TASK-032: Implement configuration rollback
    */
-  async createConfigurationBackup(configPath: string, originalConfig: any): Promise<RollbackOperation> {
+  async createConfigurationBackup(
+    configPath: string,
+    originalConfig: any
+  ): Promise<RollbackOperation> {
     const operationId = this.generateOperationId();
     const backupPath = await this.createBackupPath(configPath, operationId);
-    
+
     try {
       // Save original configuration
-      await fs.writeFile(backupPath, JSON.stringify(originalConfig, null, 2), 'utf8');
+      await fs.writeFile(
+        backupPath,
+        JSON.stringify(originalConfig, null, 2),
+        'utf8'
+      );
 
       const rollbackOperation: RollbackOperation = {
         id: operationId,
@@ -153,16 +170,23 @@ export class RollbackManager {
       this.activeOperations.set(operationId, rollbackOperation);
       return rollbackOperation;
     } catch (error) {
-      throw new Error(`Failed to create configuration backup: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to create configuration backup: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * Create a rollback point
    */
-  async createRollbackPoint(name: string, description: string = ''): Promise<RollbackPoint> {
+  async createRollbackPoint(
+    name: string,
+    description: string = ''
+  ): Promise<RollbackPoint> {
     const pointId = this.generatePointId();
-    const operations = Array.from(this.activeOperations.values()).filter(op => op.status === 'pending');
+    const operations = Array.from(this.activeOperations.values()).filter(
+      op => op.status === 'pending'
+    );
 
     const rollbackPoint: RollbackPoint = {
       id: pointId,
@@ -174,8 +198,11 @@ export class RollbackManager {
       metadata: {
         operationCount: operations.length,
         fileOperations: operations.filter(op => op.type === 'file').length,
-        directoryOperations: operations.filter(op => op.type === 'directory').length,
-        configurationOperations: operations.filter(op => op.type === 'configuration').length,
+        directoryOperations: operations.filter(op => op.type === 'directory')
+          .length,
+        configurationOperations: operations.filter(
+          op => op.type === 'configuration'
+        ).length,
       },
     };
 
@@ -200,7 +227,9 @@ export class RollbackManager {
     }
 
     if (rollbackPoint.status === 'rolled_back') {
-      throw new Error(`Rollback point '${pointId}' has already been rolled back`);
+      throw new Error(
+        `Rollback point '${pointId}' has already been rolled back`
+      );
     }
 
     const startTime = Date.now();
@@ -219,7 +248,9 @@ export class RollbackManager {
       } catch (error) {
         operation.status = 'failed';
         failedOperations++;
-        errors.push(`Failed to rollback operation ${operation.id}: ${error instanceof Error ? error.message : String(error)}`);
+        errors.push(
+          `Failed to rollback operation ${operation.id}: ${error instanceof Error ? error.message : String(error)}`
+        );
       }
     }
 
@@ -257,7 +288,9 @@ export class RollbackManager {
   /**
    * Rollback file operation
    */
-  private async rollbackFileOperation(operation: RollbackOperation): Promise<void> {
+  private async rollbackFileOperation(
+    operation: RollbackOperation
+  ): Promise<void> {
     switch (operation.action) {
       case 'create':
         // Delete the created file
@@ -290,7 +323,9 @@ export class RollbackManager {
   /**
    * Rollback directory operation
    */
-  private async rollbackDirectoryOperation(operation: RollbackOperation): Promise<void> {
+  private async rollbackDirectoryOperation(
+    operation: RollbackOperation
+  ): Promise<void> {
     switch (operation.action) {
       case 'create':
         // Remove the created directory
@@ -298,7 +333,9 @@ export class RollbackManager {
           await fs.rmdir(operation.path);
         } catch (error) {
           // Directory might not exist or not be empty
-          throw new Error(`Failed to remove directory: ${error instanceof Error ? error.message : String(error)}`);
+          throw new Error(
+            `Failed to remove directory: ${error instanceof Error ? error.message : String(error)}`
+          );
         }
         break;
 
@@ -318,9 +355,15 @@ export class RollbackManager {
   /**
    * Rollback configuration operation
    */
-  private async rollbackConfigurationOperation(operation: RollbackOperation): Promise<void> {
+  private async rollbackConfigurationOperation(
+    operation: RollbackOperation
+  ): Promise<void> {
     if (operation.originalConfig) {
-      await fs.writeFile(operation.path, JSON.stringify(operation.originalConfig, null, 2), 'utf8');
+      await fs.writeFile(
+        operation.path,
+        JSON.stringify(operation.originalConfig, null, 2),
+        'utf8'
+      );
     }
   }
 
@@ -348,7 +391,9 @@ export class RollbackManager {
   /**
    * Clear old rollback points
    */
-  async clearOldRollbackPoints(maxAge: number = 7 * 24 * 60 * 60 * 1000): Promise<number> {
+  async clearOldRollbackPoints(
+    maxAge: number = 7 * 24 * 60 * 60 * 1000
+  ): Promise<number> {
     const cutoffTime = Date.now() - maxAge;
     const pointsToRemove: string[] = [];
 
@@ -381,13 +426,16 @@ export class RollbackManager {
   /**
    * Create backup path
    */
-  private async createBackupPath(originalPath: string, operationId: string): Promise<string> {
+  private async createBackupPath(
+    originalPath: string,
+    operationId: string
+  ): Promise<string> {
     await fs.mkdir(this.backupDirectory, { recursive: true });
-    
+
     const fileName = path.basename(originalPath);
     const extension = path.extname(fileName);
     const baseName = path.basename(fileName, extension);
-    
+
     const backupFileName = `${baseName}_${operationId}${extension}`;
     return path.join(this.backupDirectory, backupFileName);
   }
@@ -397,17 +445,19 @@ export class RollbackManager {
    */
   private async getDirectoryStructure(dirPath: string): Promise<string[]> {
     const structure: string[] = [];
-    
+
     try {
       const items = await fs.readdir(dirPath);
-      
+
       for (const item of items) {
         const itemPath = path.join(dirPath, item);
         const stat = await fs.stat(itemPath);
-        
+
         if (stat.isDirectory()) {
           const subStructure = await this.getDirectoryStructure(itemPath);
-          structure.push(...subStructure.map(subItem => path.join(item, subItem)));
+          structure.push(
+            ...subStructure.map(subItem => path.join(item, subItem))
+          );
         } else {
           structure.push(item);
         }
@@ -415,26 +465,33 @@ export class RollbackManager {
     } catch (error) {
       // Directory might not exist
     }
-    
+
     return structure;
   }
 
   /**
    * Backup directory structure
    */
-  private async backupDirectoryStructure(sourcePath: string, backupPath: string): Promise<void> {
+  private async backupDirectoryStructure(
+    sourcePath: string,
+    backupPath: string
+  ): Promise<void> {
     try {
       await fs.mkdir(backupPath, { recursive: true });
-      
+
       const structure = await this.getDirectoryStructure(sourcePath);
       const structureFile = path.join(backupPath, 'structure.json');
-      await fs.writeFile(structureFile, JSON.stringify(structure, null, 2), 'utf8');
-      
+      await fs.writeFile(
+        structureFile,
+        JSON.stringify(structure, null, 2),
+        'utf8'
+      );
+
       // Copy files
       for (const file of structure) {
         const sourceFile = path.join(sourcePath, file);
         const backupFile = path.join(backupPath, file);
-        
+
         try {
           await fs.mkdir(path.dirname(backupFile), { recursive: true });
           await fs.copyFile(sourceFile, backupFile);
@@ -443,17 +500,22 @@ export class RollbackManager {
         }
       }
     } catch (error) {
-      throw new Error(`Failed to backup directory structure: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to backup directory structure: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
   /**
    * Restore directory structure
    */
-  private async restoreDirectoryStructure(targetPath: string, structure: string[]): Promise<void> {
+  private async restoreDirectoryStructure(
+    targetPath: string,
+    structure: string[]
+  ): Promise<void> {
     try {
       await fs.mkdir(targetPath, { recursive: true });
-      
+
       // This is a simplified restoration - in a real implementation,
       // you would restore from the actual backup files
       for (const file of structure) {
@@ -462,7 +524,9 @@ export class RollbackManager {
         await fs.writeFile(filePath, '', 'utf8'); // Create empty file
       }
     } catch (error) {
-      throw new Error(`Failed to restore directory structure: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to restore directory structure: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -493,14 +557,15 @@ export class RollbackManager {
   } {
     const points = Array.from(this.rollbackPoints.values());
     const operations = Array.from(this.activeOperations.values());
-    
+
     return {
       totalPoints: points.length,
       activePoints: points.filter(p => p.status === 'active').length,
       rolledBackPoints: points.filter(p => p.status === 'rolled_back').length,
       totalOperations: operations.length,
-      successfulRollbacks: operations.filter(op => op.status === 'rolled_back').length,
+      successfulRollbacks: operations.filter(op => op.status === 'rolled_back')
+        .length,
       failedRollbacks: operations.filter(op => op.status === 'failed').length,
     };
   }
-} 
+}

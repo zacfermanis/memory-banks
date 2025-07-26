@@ -214,7 +214,8 @@
 
 ## Known Issues
 
-- Some tests are currently failing due to TypeScript errors in test and service files
+- Memory issues in performance and integration tests causing test failures
+- Some TypeScript errors have been fixed, but memory management needs improvement
 - Developer documentation is still in progress
 
 ### Potential Future Issues

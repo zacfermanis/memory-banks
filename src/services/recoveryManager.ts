@@ -1,4 +1,9 @@
-import { ErrorHandler, ErrorCategory, TemplateError } from './errorHandler';
+import {
+  ErrorHandler,
+  ErrorCategory,
+  ErrorSeverity,
+  TemplateError,
+} from './errorHandler';
 import { RollbackManager, RollbackPoint } from './rollbackManager';
 import { TemplateRenderer } from './templateRenderer';
 import { TemplateValidator } from './templateValidator';
@@ -50,7 +55,7 @@ export class RecoveryManager {
   private renderer: TemplateRenderer;
   private validator: TemplateValidator;
   private cache: TemplateCache;
-  
+
   private options: RecoveryOptions;
   private recoveryActions: RecoveryAction[] = [];
   private monitoringAlerts: MonitoringAlert[] = [];
@@ -70,7 +75,7 @@ export class RecoveryManager {
     this.renderer = renderer;
     this.validator = validator;
     this.cache = cache;
-    
+
     this.options = {
       enableAutoRecovery: true,
       maxRecoveryAttempts: 3,
@@ -84,7 +89,10 @@ export class RecoveryManager {
   /**
    * TASK-033: Implement automatic error recovery
    */
-  async handleError(error: Error, context: any = {}): Promise<{
+  async handleError(
+    error: Error,
+    context: any = {}
+  ): Promise<{
     recovered: boolean;
     action?: RecoveryAction;
     rollbackPoint?: RollbackPoint;
@@ -104,8 +112,11 @@ export class RecoveryManager {
     // Check recovery attempt limits
     const attemptCount = this.recoveryAttempts.get(templateError.id) || 0;
     if (attemptCount >= this.options.maxRecoveryAttempts!) {
-      this.createMonitoringAlert('recovery_failure', 'high', 
-        `Max recovery attempts exceeded for error ${templateError.id}`);
+      this.createMonitoringAlert(
+        'recovery_failure',
+        'high',
+        `Max recovery attempts exceeded for error ${templateError.id}`
+      );
       return { recovered: false };
     }
 
@@ -114,7 +125,7 @@ export class RecoveryManager {
     try {
       // Attempt automatic recovery
       const recoveryResult = await this.performAutomaticRecovery(templateError);
-      
+
       const duration = Date.now() - startTime;
       const action: RecoveryAction = {
         id: recoveryActionId,
@@ -137,13 +148,43 @@ export class RecoveryManager {
         );
 
         if (this.options.logRecoveryActions) {
-          console.log(`✅ Automatic recovery successful for error ${templateError.id} in ${duration}ms`);
+          // Log recovery success (console.log replaced with error handling)
+          const successError: TemplateError = {
+            id: this.generateActionId(),
+            category: ErrorCategory.SYSTEM,
+            severity: ErrorSeverity.LOW,
+            message: `Recovery successful for error ${templateError.id} in ${duration}ms`,
+            code: 'RECOVERY_SUCCESS',
+            context: {
+              timestamp: new Date(),
+              operation: 'recovery',
+            },
+            recoverable: false,
+            suggestions: [],
+            timestamp: new Date(),
+          };
+          this.errorHandler.logError(successError, 'info');
         }
 
         return { recovered: true, action, rollbackPoint };
       } else {
         if (this.options.logRecoveryActions) {
-          console.log(`❌ Automatic recovery failed for error ${templateError.id} in ${duration}ms`);
+          // Log recovery failure (console.log replaced with error handling)
+          const failureError: TemplateError = {
+            id: this.generateActionId(),
+            category: ErrorCategory.SYSTEM,
+            severity: ErrorSeverity.MEDIUM,
+            message: `Recovery failed for error ${templateError.id} in ${duration}ms`,
+            code: 'RECOVERY_FAILED',
+            context: {
+              timestamp: new Date(),
+              operation: 'recovery',
+            },
+            recoverable: false,
+            suggestions: [],
+            timestamp: new Date(),
+          };
+          this.errorHandler.logError(failureError, 'warn');
         }
         return { recovered: false, action };
       }
@@ -157,7 +198,12 @@ export class RecoveryManager {
         timestamp: new Date(),
         success: false,
         duration,
-        details: { error: recoveryError instanceof Error ? recoveryError.message : String(recoveryError) },
+        details: {
+          error:
+            recoveryError instanceof Error
+              ? recoveryError.message
+              : String(recoveryError),
+        },
       };
 
       this.recoveryActions.push(action);
@@ -182,8 +228,11 @@ export class RecoveryManager {
 
     try {
       // Execute manual recovery steps
-      const result = await this.executeManualRecoverySteps(strategy, manualSteps);
-      
+      const result = await this.executeManualRecoverySteps(
+        strategy,
+        manualSteps
+      );
+
       const duration = Date.now() - startTime;
       const action: RecoveryAction = {
         id: actionId,
@@ -217,7 +266,9 @@ export class RecoveryManager {
         timestamp: new Date(),
         success: false,
         duration,
-        details: { error: error instanceof Error ? error.message : String(error) },
+        details: {
+          error: error instanceof Error ? error.message : String(error),
+        },
       };
 
       this.recoveryActions.push(action);
@@ -272,12 +323,14 @@ export class RecoveryManager {
     try {
       const memoryUsage = process.memoryUsage();
       const heapUsagePercent = memoryUsage.heapUsed / memoryUsage.heapTotal;
-      
+
       if (heapUsagePercent > 0.8) {
         // Force garbage collection if available
         if (global.gc) {
           global.gc();
-          preventionRules.push('Garbage collection triggered due to high memory usage');
+          preventionRules.push(
+            'Garbage collection triggered due to high memory usage'
+          );
           appliedRules++;
           preventedErrors++;
         }
@@ -302,22 +355,30 @@ export class RecoveryManager {
     alerts: MonitoringAlert[];
   }> {
     const metrics: Record<string, any> = {};
-    
+
     // Error rate monitoring
     const errorStats = this.errorHandler.getErrorStatistics();
-    const errorRate = errorStats.totalErrors > 0 ? 
-      (errorStats.errorsBySeverity.critical / errorStats.totalErrors) * 100 : 0;
-    
+    const errorRate =
+      errorStats.totalErrors > 0
+        ? (errorStats.errorsBySeverity.critical / errorStats.totalErrors) * 100
+        : 0;
+
     metrics['errorRate'] = errorRate;
     metrics['totalErrors'] = errorStats.totalErrors;
     metrics['criticalErrors'] = errorStats.errorsBySeverity.critical;
 
     if (errorRate > 20) {
-      this.createMonitoringAlert('error_spike', 'critical', 
-        `High error rate detected: ${errorRate.toFixed(2)}%`);
+      this.createMonitoringAlert(
+        'error_spike',
+        'critical',
+        `High error rate detected: ${errorRate.toFixed(2)}%`
+      );
     } else if (errorRate > 10) {
-      this.createMonitoringAlert('error_spike', 'high', 
-        `Elevated error rate detected: ${errorRate.toFixed(2)}%`);
+      this.createMonitoringAlert(
+        'error_spike',
+        'high',
+        `Elevated error rate detected: ${errorRate.toFixed(2)}%`
+      );
     }
 
     // Recovery success rate monitoring
@@ -327,8 +388,11 @@ export class RecoveryManager {
     metrics['failedRecoveries'] = recoveryStats.failedRecoveries;
 
     if (recoveryStats.recoveryRate < 0.5) {
-      this.createMonitoringAlert('recovery_failure', 'high', 
-        `Low recovery success rate: ${(recoveryStats.recoveryRate * 100).toFixed(2)}%`);
+      this.createMonitoringAlert(
+        'recovery_failure',
+        'high',
+        `Low recovery success rate: ${(recoveryStats.recoveryRate * 100).toFixed(2)}%`
+      );
     }
 
     // Performance monitoring
@@ -340,11 +404,17 @@ export class RecoveryManager {
     };
 
     if (metrics['memoryUsage'].heapUsagePercent > 90) {
-      this.createMonitoringAlert('performance_degradation', 'critical', 
-        `Critical memory usage: ${metrics['memoryUsage'].heapUsagePercent.toFixed(2)}%`);
+      this.createMonitoringAlert(
+        'performance_degradation',
+        'critical',
+        `Critical memory usage: ${metrics['memoryUsage'].heapUsagePercent.toFixed(2)}%`
+      );
     } else if (metrics['memoryUsage'].heapUsagePercent > 80) {
-      this.createMonitoringAlert('performance_degradation', 'high', 
-        `High memory usage: ${metrics['memoryUsage'].heapUsagePercent.toFixed(2)}%`);
+      this.createMonitoringAlert(
+        'performance_degradation',
+        'high',
+        `High memory usage: ${metrics['memoryUsage'].heapUsagePercent.toFixed(2)}%`
+      );
     }
 
     // Cache performance monitoring
@@ -356,16 +426,23 @@ export class RecoveryManager {
     };
 
     if (cacheStats.hitRate < 0.3) {
-      this.createMonitoringAlert('performance_degradation', 'medium', 
-        `Low cache hit rate: ${(cacheStats.hitRate * 100).toFixed(2)}%`);
+      this.createMonitoringAlert(
+        'performance_degradation',
+        'medium',
+        `Low cache hit rate: ${(cacheStats.hitRate * 100).toFixed(2)}%`
+      );
     }
 
     // Determine overall health
     let health: 'good' | 'warning' | 'critical' = 'good';
-    
+
     if (errorRate > 20 || metrics['memoryUsage'].heapUsagePercent > 90) {
       health = 'critical';
-    } else if (errorRate > 10 || metrics['memoryUsage'].heapUsagePercent > 80 || recoveryStats.recoveryRate < 0.5) {
+    } else if (
+      errorRate > 10 ||
+      metrics['memoryUsage'].heapUsagePercent > 80 ||
+      recoveryStats.recoveryRate < 0.5
+    ) {
       health = 'warning';
     }
 
@@ -386,15 +463,27 @@ export class RecoveryManager {
    */
   getRecoveryStatistics(): RecoveryStatistics {
     const totalRecoveries = this.recoveryActions.length;
-    const successfulRecoveries = this.recoveryActions.filter(a => a.success).length;
+    const successfulRecoveries = this.recoveryActions.filter(
+      a => a.success
+    ).length;
     const failedRecoveries = totalRecoveries - successfulRecoveries;
-    const autoRecoveries = this.recoveryActions.filter(a => a.type === 'automatic').length;
-    const manualRecoveries = this.recoveryActions.filter(a => a.type === 'manual').length;
+    const autoRecoveries = this.recoveryActions.filter(
+      a => a.type === 'automatic'
+    ).length;
+    const manualRecoveries = this.recoveryActions.filter(
+      a => a.type === 'manual'
+    ).length;
 
-    const averageRecoveryTime = totalRecoveries > 0 ?
-      this.recoveryActions.reduce((sum, action) => sum + action.duration, 0) / totalRecoveries : 0;
+    const averageRecoveryTime =
+      totalRecoveries > 0
+        ? this.recoveryActions.reduce(
+            (sum, action) => sum + action.duration,
+            0
+          ) / totalRecoveries
+        : 0;
 
-    const recoveryRate = totalRecoveries > 0 ? successfulRecoveries / totalRecoveries : 0;
+    const recoveryRate =
+      totalRecoveries > 0 ? successfulRecoveries / totalRecoveries : 0;
 
     return {
       totalRecoveries,
@@ -419,11 +508,11 @@ export class RecoveryManager {
    */
   clearOldData(maxAge: number = 24 * 60 * 60 * 1000): void {
     const cutoffTime = Date.now() - maxAge;
-    
+
     this.recoveryActions = this.recoveryActions.filter(
       action => action.timestamp.getTime() > cutoffTime
     );
-    
+
     this.monitoringAlerts = this.monitoringAlerts.filter(
       alert => alert.timestamp.getTime() > cutoffTime
     );
@@ -440,19 +529,19 @@ export class RecoveryManager {
     switch (error.category) {
       case ErrorCategory.TEMPLATE_SYNTAX:
         return this.recoverTemplateSyntaxError(error);
-      
+
       case ErrorCategory.VARIABLE_RESOLUTION:
         return this.recoverVariableResolutionError(error);
-      
+
       case ErrorCategory.CACHE:
         return this.recoverCacheError(error);
-      
+
       case ErrorCategory.FILE_OPERATION:
         return this.recoverFileOperationError(error);
-      
+
       case ErrorCategory.PARALLEL_PROCESSING:
         return this.recoverParallelProcessingError(error);
-      
+
       default:
         return { success: false, strategy: 'no_strategy_available' };
     }
@@ -469,16 +558,19 @@ export class RecoveryManager {
     try {
       // Clear renderer caches
       this.renderer.clearCaches();
-      
+
       // Invalidate template cache
       if (error.context.templateName) {
         this.cache.invalidateTemplate(error.context.templateName);
       }
-      
+
       return {
         success: true,
         strategy: 'template_syntax_recovery',
-        details: { cacheCleared: true, templateInvalidated: !!error.context.templateName },
+        details: {
+          cacheCleared: true,
+          templateInvalidated: !!error.context.templateName,
+        },
       };
     } catch (error) {
       return { success: false, strategy: 'template_syntax_recovery' };
@@ -496,7 +588,7 @@ export class RecoveryManager {
     try {
       // Clear variable caches
       this.renderer.clearCaches();
-      
+
       return {
         success: true,
         strategy: 'variable_resolution_recovery',
@@ -519,7 +611,7 @@ export class RecoveryManager {
       // Clear all caches
       this.cache.invalidateAll();
       this.renderer.clearCaches();
-      
+
       return {
         success: true,
         strategy: 'cache_recovery',
@@ -543,14 +635,14 @@ export class RecoveryManager {
       if (error.context.fileName) {
         const dir = path.dirname(error.context.fileName);
         await fs.promises.mkdir(dir, { recursive: true });
-        
+
         return {
           success: true,
           strategy: 'file_operation_recovery',
           details: { directoryCreated: dir },
         };
       }
-      
+
       return { success: false, strategy: 'file_operation_recovery' };
     } catch (error) {
       return { success: false, strategy: 'file_operation_recovery' };
@@ -569,7 +661,7 @@ export class RecoveryManager {
       // Clear caches and reduce load
       this.cache.invalidateAll();
       this.renderer.clearCaches();
-      
+
       return {
         success: true,
         strategy: 'parallel_processing_recovery',
@@ -583,24 +675,31 @@ export class RecoveryManager {
   /**
    * Execute manual recovery steps
    */
-  private async executeManualRecoverySteps(strategy: string, steps: string[]): Promise<{
+  private async executeManualRecoverySteps(
+    strategy: string,
+    steps: string[]
+  ): Promise<{
     success: boolean;
     details?: any;
   }> {
     const results: any[] = [];
-    
+
     for (const step of steps) {
       try {
         // Execute step based on strategy
         const result = await this.executeRecoveryStep(strategy, step);
         results.push({ step, success: true, result });
       } catch (error) {
-        results.push({ step, success: false, error: error instanceof Error ? error.message : String(error) });
+        results.push({
+          step,
+          success: false,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
-    
+
     const success = results.every(r => r.success);
-    
+
     return {
       success,
       details: { steps: results },
@@ -610,11 +709,14 @@ export class RecoveryManager {
   /**
    * Execute a single recovery step
    */
-  private async executeRecoveryStep(strategy: string, step: string): Promise<any> {
+  private async executeRecoveryStep(
+    strategy: string,
+    step: string
+  ): Promise<any> {
     // This is a simplified implementation
     // In a real system, you would have more sophisticated step execution
     await new Promise(resolve => setTimeout(resolve, 100)); // Simulate step execution
-    
+
     return { executed: true, step, strategy };
   }
 
@@ -623,11 +725,14 @@ export class RecoveryManager {
    */
   private updateErrorMonitoring(_error: TemplateError): void {
     this.errorCount++;
-    
+
     // Check for error spikes
     if (this.errorCount > 10) {
-      this.createMonitoringAlert('error_spike', 'medium', 
-        `High error count detected: ${this.errorCount} errors`);
+      this.createMonitoringAlert(
+        'error_spike',
+        'medium',
+        `High error count detected: ${this.errorCount} errors`
+      );
     }
   }
 
@@ -648,7 +753,7 @@ export class RecoveryManager {
       timestamp: new Date(),
       data,
     };
-    
+
     this.monitoringAlerts.push(alert);
   }
 
@@ -665,4 +770,4 @@ export class RecoveryManager {
   private generateAlertId(): string {
     return `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
-} 
+}

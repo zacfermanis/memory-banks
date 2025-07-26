@@ -401,7 +401,7 @@ export class ParallelProcessor {
   /**
    * Get current memory usage
    */
-  getMemoryUsage(): NodeJS.MemoryUsage {
+  getMemoryUsage(): ReturnType<typeof process.memoryUsage> {
     return process.memoryUsage();
   }
 

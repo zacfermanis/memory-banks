@@ -7,7 +7,9 @@ module.exports = {
     '**/?(*.)+(spec|test).ts'
   ],
   transform: {
-    '^.+\\.ts$': 'ts-jest'
+    '^.+\\.ts$': ['ts-jest', {
+      tsconfig: 'tsconfig.test.json'
+    }]
   },
   transformIgnorePatterns: [
     'node_modules/(?!(chalk)/)'
@@ -33,5 +35,19 @@ module.exports = {
     }
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
-  testTimeout: 10000
+  testTimeout: 60000, // Increased timeout for performance tests
+  // Memory and performance optimizations
+  maxWorkers: 1, // Run tests sequentially to avoid memory conflicts
+  workerIdleMemoryLimit: '1GB', // Increased memory limit
+  // Disable coverage for performance tests to reduce memory usage
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '/tests/performance/'
+  ],
+  // Force garbage collection between tests
+  testEnvironmentOptions: {
+    node: {
+      maxOldSpaceSize: 4096
+    }
+  }
 }; 

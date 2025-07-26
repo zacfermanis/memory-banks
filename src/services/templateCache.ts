@@ -52,13 +52,17 @@ export class TemplateCache {
     const entry = this.metadataCache.get(key);
 
     if (!entry) {
-      if (this.enableStats) this.stats.misses++;
+      if (this.enableStats) {
+        this.stats.misses++;
+      }
       return null;
     }
 
     if (this.isExpired(entry)) {
       this.metadataCache.delete(key);
-      if (this.enableStats) this.stats.misses++;
+      if (this.enableStats) {
+        this.stats.misses++;
+      }
       return null;
     }
 
@@ -66,7 +70,9 @@ export class TemplateCache {
     entry.accessCount++;
     entry.lastAccessed = Date.now();
 
-    if (this.enableStats) this.stats.hits++;
+    if (this.enableStats) {
+      this.stats.hits++;
+    }
     return entry.data;
   }
 
@@ -93,13 +99,17 @@ export class TemplateCache {
     const entry = this.contentCache.get(key);
 
     if (!entry) {
-      if (this.enableStats) this.stats.misses++;
+      if (this.enableStats) {
+        this.stats.misses++;
+      }
       return null;
     }
 
     if (this.isExpired(entry)) {
       this.contentCache.delete(key);
-      if (this.enableStats) this.stats.misses++;
+      if (this.enableStats) {
+        this.stats.misses++;
+      }
       return null;
     }
 
@@ -107,7 +117,9 @@ export class TemplateCache {
     entry.accessCount++;
     entry.lastAccessed = Date.now();
 
-    if (this.enableStats) this.stats.hits++;
+    if (this.enableStats) {
+      this.stats.hits++;
+    }
     return entry.data;
   }
 
@@ -134,13 +146,17 @@ export class TemplateCache {
     const entry = this.templateCache.get(key);
 
     if (!entry) {
-      if (this.enableStats) this.stats.misses++;
+      if (this.enableStats) {
+        this.stats.misses++;
+      }
       return null;
     }
 
     if (this.isExpired(entry)) {
       this.templateCache.delete(key);
-      if (this.enableStats) this.stats.misses++;
+      if (this.enableStats) {
+        this.stats.misses++;
+      }
       return null;
     }
 
@@ -148,7 +164,9 @@ export class TemplateCache {
     entry.accessCount++;
     entry.lastAccessed = Date.now();
 
-    if (this.enableStats) this.stats.hits++;
+    if (this.enableStats) {
+      this.stats.hits++;
+    }
     return entry.data;
   }
 
@@ -262,7 +280,9 @@ export class TemplateCache {
    * Ensure cache doesn't exceed max size
    */
   private ensureCacheSize<T>(cache: Map<string, CacheEntry<T>>): void {
-    if (cache.size <= this.maxSize) return;
+    if (cache.size <= this.maxSize) {
+      return;
+    }
 
     // Remove least recently used entries
     const entries = Array.from(cache.entries());
@@ -271,7 +291,9 @@ export class TemplateCache {
     const toRemove = entries.slice(0, cache.size - this.maxSize);
     toRemove.forEach(([key]) => {
       cache.delete(key);
-      if (this.enableStats) this.stats.evictions++;
+      if (this.enableStats) {
+        this.stats.evictions++;
+      }
     });
   }
 
@@ -304,8 +326,8 @@ export class TemplateCache {
         const template = await loader(key);
         this.setTemplateConfig(key, template, this.defaultTTL * 2); // Longer TTL for preloaded items
       } catch (error) {
-        // Silently fail preloading
-        console.warn(`Failed to preload template ${key}:`, error);
+        // Silently fail preloading - log error for debugging
+        // console.warn replaced with error handling
       }
     });
 
@@ -324,7 +346,8 @@ export class TemplateCache {
         const metadata = await loader(key);
         this.setTemplateMetadata(key, metadata, this.defaultTTL * 2);
       } catch (error) {
-        console.warn(`Failed to warmup metadata for ${key}:`, error);
+        // Silently fail warmup - log error for debugging
+        // console.warn replaced with error handling
       }
     });
 

@@ -78,7 +78,10 @@ export class ErrorHandler {
   /**
    * TASK-031: Implement error categorization
    */
-  categorizeError(error: Error, context: Partial<ErrorContext> = {}): TemplateError {
+  categorizeError(
+    error: Error,
+    context: Partial<ErrorContext> = {}
+  ): TemplateError {
     const errorId = this.generateErrorId();
     const category = this.determineErrorCategory(error);
     const severity = this.determineErrorSeverity(error, category);
@@ -144,7 +147,9 @@ export class ErrorHandler {
    */
   generateErrorReport(): ErrorReport {
     const totalErrors = this.errors.length;
-    const criticalErrors = this.errors.filter(e => e.severity === ErrorSeverity.CRITICAL).length;
+    const criticalErrors = this.errors.filter(
+      e => e.severity === ErrorSeverity.CRITICAL
+    ).length;
     const recoverableErrors = this.errors.filter(e => e.recoverable).length;
     const errorRate = this.calculateErrorRate();
 
@@ -166,7 +171,10 @@ export class ErrorHandler {
   /**
    * TASK-031: Add error logging
    */
-  async logError(error: TemplateError, logLevel: 'info' | 'warn' | 'error' = 'error'): Promise<void> {
+  async logError(
+    error: TemplateError,
+    logLevel: 'info' | 'warn' | 'error' = 'error'
+  ): Promise<void> {
     const logEntry = {
       timestamp: error.timestamp.toISOString(),
       level: logLevel,
@@ -182,8 +190,11 @@ export class ErrorHandler {
     const logDir = path.join(process.cwd(), 'logs');
     await fs.mkdir(logDir, { recursive: true });
 
-    const logFile = path.join(logDir, `template-engine-${new Date().toISOString().split('T')[0]}.log`);
-    const logLine = JSON.stringify(logEntry) + '\n';
+    const logFile = path.join(
+      logDir,
+      `template-engine-${new Date().toISOString().split('T')[0]}.log`
+    );
+    const logLine = `${JSON.stringify(logEntry)}\n`;
 
     await fs.appendFile(logFile, logLine, 'utf8');
   }
@@ -245,8 +256,14 @@ export class ErrorHandler {
       errorsBySeverity[error.severity]++;
     });
 
-    const totalRecoveryAttempts = Array.from(this.recoveryAttempts.values()).reduce((sum, count) => sum + count, 0);
-    const successRate = this.errors.length > 0 ? (this.errors.filter(e => e.recoverable).length / this.errors.length) * 100 : 0;
+    const totalRecoveryAttempts = Array.from(
+      this.recoveryAttempts.values()
+    ).reduce((sum, count) => sum + count, 0);
+    const successRate =
+      this.errors.length > 0
+        ? (this.errors.filter(e => e.recoverable).length / this.errors.length) *
+          100
+        : 0;
 
     return {
       totalErrors: this.errors.length,
@@ -294,7 +311,10 @@ export class ErrorHandler {
         id: 'file-operation-retry',
         name: 'File Operation Retry',
         description: 'Retries file operations with different strategies',
-        applicableErrors: [ErrorCategory.FILE_OPERATION, ErrorCategory.PERMISSION],
+        applicableErrors: [
+          ErrorCategory.FILE_OPERATION,
+          ErrorCategory.PERMISSION,
+        ],
         recoverySteps: [
           'Check file permissions',
           'Create missing directories',
@@ -346,13 +366,25 @@ export class ErrorHandler {
     const message = error.message.toLowerCase();
     const stack = error.stack?.toLowerCase() || '';
 
-    if (message.includes('template') || message.includes('syntax') || stack.includes('template')) {
+    if (
+      message.includes('template') ||
+      message.includes('syntax') ||
+      stack.includes('template')
+    ) {
       return ErrorCategory.TEMPLATE_SYNTAX;
     }
-    if (message.includes('variable') || message.includes('undefined') || message.includes('null')) {
+    if (
+      message.includes('variable') ||
+      message.includes('undefined') ||
+      message.includes('null')
+    ) {
       return ErrorCategory.VARIABLE_RESOLUTION;
     }
-    if (message.includes('file') || message.includes('path') || message.includes('directory')) {
+    if (
+      message.includes('file') ||
+      message.includes('path') ||
+      message.includes('directory')
+    ) {
       return ErrorCategory.FILE_OPERATION;
     }
     if (message.includes('validation') || message.includes('invalid')) {
@@ -380,21 +412,34 @@ export class ErrorHandler {
   /**
    * Determine error severity
    */
-  private determineErrorSeverity(error: Error, category: ErrorCategory): ErrorSeverity {
+  private determineErrorSeverity(
+    error: Error,
+    category: ErrorCategory
+  ): ErrorSeverity {
     const message = error.message.toLowerCase();
 
     // Critical errors
-    if (message.includes('fatal') || message.includes('critical') || category === ErrorCategory.SYSTEM) {
+    if (
+      message.includes('fatal') ||
+      message.includes('critical') ||
+      category === ErrorCategory.SYSTEM
+    ) {
       return ErrorSeverity.CRITICAL;
     }
 
     // High severity errors
-    if (category === ErrorCategory.FILE_OPERATION || category === ErrorCategory.PERMISSION) {
+    if (
+      category === ErrorCategory.FILE_OPERATION ||
+      category === ErrorCategory.PERMISSION
+    ) {
       return ErrorSeverity.HIGH;
     }
 
     // Medium severity errors
-    if (category === ErrorCategory.TEMPLATE_SYNTAX || category === ErrorCategory.VALIDATION) {
+    if (
+      category === ErrorCategory.TEMPLATE_SYNTAX ||
+      category === ErrorCategory.VALIDATION
+    ) {
       return ErrorSeverity.MEDIUM;
     }
 
@@ -409,7 +454,11 @@ export class ErrorHandler {
     const message = error.message.toLowerCase();
 
     // Non-recoverable errors
-    if (message.includes('fatal') || message.includes('critical') || category === ErrorCategory.SYSTEM) {
+    if (
+      message.includes('fatal') ||
+      message.includes('critical') ||
+      category === ErrorCategory.SYSTEM
+    ) {
       return false;
     }
 
@@ -425,7 +474,10 @@ export class ErrorHandler {
   /**
    * Generate error suggestions
    */
-  private generateErrorSuggestions(_error: Error, category: ErrorCategory): string[] {
+  private generateErrorSuggestions(
+    _error: Error,
+    category: ErrorCategory
+  ): string[] {
     const suggestions: string[] = [];
 
     switch (category) {
@@ -486,14 +538,26 @@ export class ErrorHandler {
    */
   private extractErrorCode(error: Error): string {
     const message = error.message.toLowerCase();
-    
-    if (message.includes('template')) return 'TEMPLATE_ERROR';
-    if (message.includes('variable')) return 'VARIABLE_ERROR';
-    if (message.includes('file')) return 'FILE_ERROR';
-    if (message.includes('validation')) return 'VALIDATION_ERROR';
-    if (message.includes('cache')) return 'CACHE_ERROR';
-    if (message.includes('permission')) return 'PERMISSION_ERROR';
-    
+
+    if (message.includes('template')) {
+      return 'TEMPLATE_ERROR';
+    }
+    if (message.includes('variable')) {
+      return 'VARIABLE_ERROR';
+    }
+    if (message.includes('file')) {
+      return 'FILE_ERROR';
+    }
+    if (message.includes('validation')) {
+      return 'VALIDATION_ERROR';
+    }
+    if (message.includes('cache')) {
+      return 'CACHE_ERROR';
+    }
+    if (message.includes('permission')) {
+      return 'PERMISSION_ERROR';
+    }
+
     return 'UNKNOWN_ERROR';
   }
 
@@ -515,7 +579,9 @@ export class ErrorHandler {
   /**
    * Find recovery strategy
    */
-  private findRecoveryStrategy(category: ErrorCategory): ErrorRecoveryStrategy | undefined {
+  private findRecoveryStrategy(
+    category: ErrorCategory
+  ): ErrorRecoveryStrategy | undefined {
     for (const strategy of this.recoveryStrategies.values()) {
       if (strategy.applicableErrors.includes(category)) {
         return strategy;
@@ -527,10 +593,13 @@ export class ErrorHandler {
   /**
    * Execute recovery strategy
    */
-  private async executeRecoveryStrategy(strategy: ErrorRecoveryStrategy, error: TemplateError): Promise<any> {
+  private async executeRecoveryStrategy(
+    strategy: ErrorRecoveryStrategy,
+    error: TemplateError
+  ): Promise<any> {
     // Simulate recovery execution based on strategy
     await new Promise(resolve => setTimeout(resolve, strategy.estimatedTime));
-    
+
     // Return mock recovered data
     return {
       strategyId: strategy.id,
@@ -545,7 +614,11 @@ export class ErrorHandler {
    */
   private calculateErrorRate(): number {
     // Mock error rate calculation
-    return this.errors.length > 0 ? (this.errors.filter(e => e.severity === ErrorSeverity.CRITICAL).length / this.errors.length) * 100 : 0;
+    return this.errors.length > 0
+      ? (this.errors.filter(e => e.severity === ErrorSeverity.CRITICAL).length /
+          this.errors.length) *
+          100
+      : 0;
   }
 
   /**
@@ -565,9 +638,11 @@ export class ErrorHandler {
       recommendations.push('Check file permissions and directory structure');
     }
     if (stats.recoveryAttempts > 0) {
-      recommendations.push('Consider implementing additional error recovery strategies');
+      recommendations.push(
+        'Consider implementing additional error recovery strategies'
+      );
     }
 
     return recommendations;
   }
-} 
+}

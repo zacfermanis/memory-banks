@@ -667,8 +667,12 @@ export class TemplateRegistry {
       const v1 = v1Parts[i] || 0;
       const v2 = v2Parts[i] || 0;
 
-      if (v1 < v2) return -1;
-      if (v1 > v2) return 1;
+      if (v1 < v2) {
+        return -1;
+      }
+      if (v1 > v2) {
+        return 1;
+      }
     }
 
     return 0;
@@ -800,13 +804,15 @@ export class TemplateRegistry {
    * Format bytes to human readable format
    */
   private formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {
+      return '0 Bytes';
+    }
 
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
   }
 
   // Existing methods (keeping for backward compatibility)

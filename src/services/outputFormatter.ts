@@ -361,7 +361,7 @@ export class OutputFormatter {
     }
 
     if (footer.length > 0) {
-      return content + '\n' + footer.join('\n');
+      return `${content}\n${footer.join('\n')}`;
     }
 
     return content;
