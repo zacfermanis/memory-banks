@@ -1,0 +1,21 @@
+{
+  "defaults": {
+    "projectName": "Custom Project",
+    "projectType": "Custom Application",
+    "projectDescription": "A custom project with memory bank system",
+    "version": "2.0.0",
+    "author": "Custom Author",
+    "license": "Apache-2.0",
+    "framework": "Vue",
+    "buildTool": "Webpack"
+  },
+  "templates": {
+    "typescript": {
+      "framework": "Next.js",
+      "buildTool": "Turbopack",
+      "requirement1": "Custom requirement 1",
+      "requirement2": "Custom requirement 2",
+      "requirement3": "Custom requirement 3"
+    }
+  }
+} 
