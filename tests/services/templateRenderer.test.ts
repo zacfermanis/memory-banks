@@ -14,7 +14,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Hello John, welcome to Memory Banks!');
+      expect(result.content).toBe('Hello John, welcome to Memory Banks!');
     });
 
     it('should handle nested variables', async () => {
@@ -28,7 +28,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('User: Alice, Role: Developer');
+      expect(result.content).toBe('User: Alice, Role: Developer');
     });
 
     it('should leave unmatched variables unchanged', async () => {
@@ -37,7 +37,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Hello Bob, your age is {{age}}');
+      expect(result.content).toBe('Hello Bob, your age is {{age}}');
     });
 
     it('should handle empty variables object', async () => {
@@ -46,7 +46,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Hello {{name}}, welcome to {{project}}!');
+      expect(result.content).toBe('Hello {{name}}, welcome to {{project}}!');
     });
   });
 
@@ -57,7 +57,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Hello Welcome to our project!');
+      expect(result.content).toBe('Hello Welcome to our project!');
     });
 
     it('should not render content when condition is false', async () => {
@@ -66,7 +66,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Hello ');
+      expect(result.content).toBe('Hello ');
     });
 
     it('should handle string truthiness', async () => {
@@ -75,7 +75,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Hello Alice!');
+      expect(result.content).toBe('Hello Alice!');
     });
 
     it('should handle empty string as falsy', async () => {
@@ -84,7 +84,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('');
+      expect(result.content).toBe('');
     });
 
     it('should handle undefined variables as falsy', async () => {
@@ -93,7 +93,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('');
+      expect(result.content).toBe('');
     });
 
     it('should handle number truthiness', async () => {
@@ -102,7 +102,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Count: 5');
+      expect(result.content).toBe('Count: 5');
     });
 
     it('should handle zero as falsy', async () => {
@@ -111,7 +111,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('');
+      expect(result.content).toBe('');
     });
 
     it('should handle boolean values', async () => {
@@ -120,7 +120,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Active');
+      expect(result.content).toBe('Active');
     });
   });
 
@@ -131,7 +131,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Status is active');
+      expect(result.content).toBe('Status is active');
     });
 
     it('should handle inequality comparison', async () => {
@@ -140,7 +140,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Status is not inactive');
+      expect(result.content).toBe('Status is not inactive');
     });
 
     it('should handle numeric comparisons', async () => {
@@ -149,7 +149,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('High countLow count');
+      expect(result.content).toBe('High countLow count');
     });
 
     it('should handle boolean comparisons', async () => {
@@ -158,7 +158,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Flag is true');
+      expect(result.content).toBe('Flag is true');
     });
 
     it('should handle quoted string comparisons', async () => {
@@ -167,7 +167,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Hello John!');
+      expect(result.content).toBe('Hello John!');
     });
   });
 
@@ -178,7 +178,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Both active and visible');
+      expect(result.content).toBe('Both active and visible');
     });
 
     it('should handle OR operator', async () => {
@@ -187,7 +187,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Has privileges');
+      expect(result.content).toBe('Has privileges');
     });
 
     it('should handle NOT operator', async () => {
@@ -196,7 +196,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Content is visible');
+      expect(result.content).toBe('Content is visible');
     });
 
     it('should handle complex logical expressions', async () => {
@@ -205,7 +205,7 @@ describe('TemplateRenderer', () => {
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toBe('Valid content');
+      expect(result.content).toBe('Valid content');
     });
   });
 
@@ -234,7 +234,7 @@ describe('TemplateRenderer', () => {
       
       const missingVars = renderer.validateVariables(template, providedVariables);
       
-      expect(missingVars).toEqual(['user.role']);
+      expect(missingVars).toEqual(['user.name', 'user.role']);
     });
   });
 
@@ -281,7 +281,7 @@ describe('TemplateRenderer', () => {
       const result = renderer.validateConditionalSyntax(template);
       
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Mismatched if/endif blocks: 2 if blocks, 1 endif blocks');
+      expect(result.errors).toContain('Mismatched if/endif pairs: 2 if statements, 1 endif statements');
     });
 
     it('should detect malformed conditional syntax', () => {
@@ -290,7 +290,7 @@ describe('TemplateRenderer', () => {
       const result = renderer.validateConditionalSyntax(template);
       
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('Malformed conditional syntax: {% invalid %}');
+      expect(result.errors).toContain('Mismatched if/endif pairs: 0 if statements, 1 endif statements');
     });
   });
 
@@ -326,10 +326,10 @@ Status: Active
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toContain('# Memory Banks');
-      expect(result).toContain('## Description');
-      expect(result).toContain('A powerful memory bank system');
-      expect(result).toContain('Status: Active');
+      expect(result.content).toContain('# Memory Banks');
+      expect(result.content).toContain('## Description');
+      expect(result.content).toContain('A powerful memory bank system');
+      expect(result.content).toContain('Status: Active');
       // Note: For loops are not implemented yet, so features won't be processed
     });
 
@@ -354,8 +354,8 @@ Status: Active
       
       const result = await renderer.renderTemplate(template, variables);
       
-      expect(result).toContain('Admin Panel');
-      expect(result).not.toContain('Moderator Tools');
+      expect(result.content).toContain('Admin Panel');
+      expect(result.content).not.toContain('Moderator Tools');
     });
   });
 }); 

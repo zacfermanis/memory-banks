@@ -67,3 +67,5 @@ pids
 # Temporary files
 tmp/
 temp/ 
+
+output/

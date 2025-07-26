@@ -355,7 +355,7 @@ export class BatchProcessor {
           );
           await FileSystemUtils.safeWriteFile(
             filePath,
-            renderedContent,
+            renderedContent.content,
             project.force || file.overwrite || false
           );
           createdCount++;

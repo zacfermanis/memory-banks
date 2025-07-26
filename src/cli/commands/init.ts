@@ -296,7 +296,7 @@ For more information, run: memory-banks help init
             );
             await FileSystemUtils.safeWriteFile(
               filePath,
-              renderedContent,
+              renderedContent.content,
               options.force || file.overwrite || false
             );
             console.log(chalk.green(`✅ Created ${file.path}`));

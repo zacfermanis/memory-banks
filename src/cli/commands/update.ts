@@ -129,7 +129,7 @@ Troubleshooting:
               );
               await FileSystemUtils.safeWriteFile(
                 filePath,
-                renderedContent,
+                renderedContent.content,
                 options.force || file.overwrite || false
               );
 

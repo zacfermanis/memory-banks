@@ -134,7 +134,7 @@ describe('BatchProcessor', () => {
         .mockReturnValue([]);
       
       jest.spyOn(processor['renderer'], 'renderTemplate')
-        .mockResolvedValue('Rendered content');
+        .mockResolvedValue({ content: 'Rendered content', renderTime: 1, cacheHit: false, iterations: 0 });
 
       // Mock file system
       jest.spyOn(require('../../src/utils/fileSystem').FileSystemUtils, 'fileExists')

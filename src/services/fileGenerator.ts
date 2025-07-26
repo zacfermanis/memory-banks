@@ -207,7 +207,7 @@ export class FileGenerator {
       // Create file
       const fileResult = await this.createFile(
         resolvedPath,
-        renderedContent,
+        renderedContent.content,
         templateFile,
         options
       );
@@ -239,7 +239,7 @@ export class FileGenerator {
     );
 
     // Normalize path
-    const normalizedPath = path.normalize(renderedPath);
+    const normalizedPath = path.normalize(renderedPath.content);
 
     // Validate path before joining with output directory
     if (options.validatePaths) {
@@ -262,7 +262,7 @@ export class FileGenerator {
     // Use the template renderer's conditional evaluation
     const testTemplate = `{% if ${condition} %}true{% endif %}`;
     const result = await this.renderer.renderTemplate(testTemplate, variables);
-    return result === 'true';
+    return result.content === 'true';
   }
 
   /**
@@ -512,7 +512,7 @@ export class FileGenerator {
 
         files.push({
           path: resolvedPath,
-          content: renderedContent,
+          content: renderedContent.content,
           wouldCreate: !exists,
           wouldOverwrite:
             exists && (options.overwrite || templateFile.overwrite || false),
