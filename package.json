@@ -206,7 +206,7 @@
   "dependencies": {
     "chalk": "^4.1.2",
     "commander": "^11.1.0",
-    "inquirer": "^9.2.12"
+    "inquirer": "^8.2.6"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.8",
