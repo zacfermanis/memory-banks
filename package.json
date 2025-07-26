@@ -1,15 +1,15 @@
 {
   "name": "@zacfermanis/memory-bank",
   "version": "1.0.0",
-  "description": "A CLI tool to initialize memory bank projects with AI-powered development documentation and cursor rules for TypeScript/React and Lua/Love2D development",
+  "description": "A CLI tool to initialize memory bank projects with AI-powered development documentation and cursor rules for TypeScript/React, Lua/Love2D, and Java/Spring Boot development",
   "main": "dist/index.js",
   "bin": {
     "init-memory-bank": "dist/index.js"
   },
   "files": [
     "dist",
-    "Lua",
-    "Web",
+    "src/developmentGuides",
+    "src/cursorrules",
     "README.md",
     "LICENSE",
     "jest.config.js",
@@ -36,6 +36,8 @@
     "productivity",
     "typescript",
     "lua",
+    "java",
+    "spring-boot",
     "web-development"
   ],
   "author": "Zac Fermanis <zacfermanis@gmail.com>",

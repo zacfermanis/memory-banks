@@ -57,14 +57,17 @@ describe('Memory Bank CLI', () => {
       const luaCursorRulesPath = path.join(
         __dirname,
         '..',
-        'Lua',
+        'src',
+        'cursorrules',
         '.cursorrules'
       );
       const luaDevelopmentGuidePath = path.join(
         __dirname,
         '..',
+        'src',
+        'developmentGuides',
         'Lua',
-        '.cursorrules'
+        'developmentGuide.md'
       );
 
       expect(realFs.existsSync(luaCursorRulesPath)).toBe(true);
@@ -76,12 +79,15 @@ describe('Memory Bank CLI', () => {
       const webCursorRulesPath = path.join(
         __dirname,
         '..',
-        'Web',
+        'src',
+        'cursorrules',
         '.cursorrules'
       );
       const webDevelopmentGuidePath = path.join(
         __dirname,
         '..',
+        'src',
+        'developmentGuides',
         'Web',
         'developmentGuide.md'
       );
@@ -257,18 +263,22 @@ describe('Memory Bank CLI', () => {
       const luaCursorRulesPath = path.join(
         __dirname,
         '..',
-        'Lua',
+        'src',
+        'cursorrules',
         '.cursorrules'
       );
       const webCursorRulesPath = path.join(
         __dirname,
         '..',
-        'Web',
+        'src',
+        'cursorrules',
         '.cursorrules'
       );
       const webDevelopmentGuidePath = path.join(
         __dirname,
         '..',
+        'src',
+        'developmentGuides',
         'Web',
         'developmentGuide.md'
       );
@@ -296,24 +306,28 @@ describe('Memory Bank CLI', () => {
       const luaCursorRulesPath = path.join(
         __dirname,
         '..',
-        'Lua',
+        'src',
+        'cursorrules',
         '.cursorrules'
       );
       const webCursorRulesPath = path.join(
         __dirname,
         '..',
-        'Web',
+        'src',
+        'cursorrules',
         '.cursorrules'
       );
       const webDevelopmentGuidePath = path.join(
         __dirname,
         '..',
+        'src',
+        'developmentGuides',
         'Web',
         'developmentGuide.md'
       );
 
-      expect(luaCursorRulesPath).toContain('Lua');
-      expect(webCursorRulesPath).toContain('Web');
+      expect(luaCursorRulesPath).toContain('cursorrules');
+      expect(webCursorRulesPath).toContain('cursorrules');
       expect(webDevelopmentGuidePath).toContain('developmentGuide.md');
     });
 
@@ -339,18 +353,22 @@ describe('Memory Bank CLI', () => {
       const luaCursorRulesPath = path.join(
         __dirname,
         '..',
-        'Lua',
+        'src',
+        'cursorrules',
         '.cursorrules'
       );
       const webCursorRulesPath = path.join(
         __dirname,
         '..',
-        'Web',
+        'src',
+        'cursorrules',
         '.cursorrules'
       );
       const webDevelopmentGuidePath = path.join(
         __dirname,
         '..',
+        'src',
+        'developmentGuides',
         'Web',
         'developmentGuide.md'
       );
@@ -366,18 +384,22 @@ describe('Memory Bank CLI', () => {
       const luaCursorRulesPath = path.join(
         __dirname,
         '..',
-        'Lua',
+        'src',
+        'cursorrules',
         '.cursorrules'
       );
       const webCursorRulesPath = path.join(
         __dirname,
         '..',
-        'Web',
+        'src',
+        'cursorrules',
         '.cursorrules'
       );
       const webDevelopmentGuidePath = path.join(
         __dirname,
         '..',
+        'src',
+        'developmentGuides',
         'Web',
         'developmentGuide.md'
       );
@@ -398,25 +420,29 @@ describe('Memory Bank CLI', () => {
       const luaCursorRulesPath = path.join(
         __dirname,
         '..',
-        'Lua',
+        'src',
+        'cursorrules',
         '.cursorrules'
       );
       const webCursorRulesPath = path.join(
         __dirname,
         '..',
-        'Web',
+        'src',
+        'cursorrules',
         '.cursorrules'
       );
       const webDevelopmentGuidePath = path.join(
         __dirname,
         '..',
+        'src',
+        'developmentGuides',
         'Web',
         'developmentGuide.md'
       );
 
-      expect(luaCursorRulesPath).toContain('Lua');
+      expect(luaCursorRulesPath).toContain('cursorrules');
       expect(luaCursorRulesPath).toContain('.cursorrules');
-      expect(webCursorRulesPath).toContain('Web');
+      expect(webCursorRulesPath).toContain('cursorrules');
       expect(webCursorRulesPath).toContain('.cursorrules');
       expect(webDevelopmentGuidePath).toContain('Web');
       expect(webDevelopmentGuidePath).toContain('developmentGuide.md');
@@ -546,9 +572,9 @@ describe('Memory Bank CLI', () => {
       await import('../src/index');
       
       // Test the configuration structure by checking file paths
-      const luaCursorRulesPath = path.join(__dirname, '..', 'Lua', '.cursorrules');
-      const webCursorRulesPath = path.join(__dirname, '..', 'Web', '.cursorrules');
-      const webDevelopmentGuidePath = path.join(__dirname, '..', 'Web', 'developmentGuide.md');
+          const luaCursorRulesPath = path.join(__dirname, '..', 'src', 'cursorrules', '.cursorrules');
+    const webCursorRulesPath = path.join(__dirname, '..', 'src', 'cursorrules', '.cursorrules');
+              const webDevelopmentGuidePath = path.join(__dirname, '..', 'src', 'developmentGuides', 'Web', 'developmentGuide.md');
       
       const realFs = jest.requireActual('fs');
       
@@ -558,8 +584,8 @@ describe('Memory Bank CLI', () => {
       expect(realFs.existsSync(webDevelopmentGuidePath)).toBe(true);
       
       // Test path structure
-      expect(luaCursorRulesPath).toContain('Lua');
-      expect(webCursorRulesPath).toContain('Web');
+      expect(luaCursorRulesPath).toContain('cursorrules');
+      expect(webCursorRulesPath).toContain('cursorrules');
       expect(webDevelopmentGuidePath).toContain('developmentGuide.md');
     });
 

@@ -74,6 +74,10 @@ describe('Main Function Coverage Testing', () => {
               name: "Web - For TypeScript/React/Next.js development",
               value: "web",
             },
+            {
+              name: "Java - For Java/Spring Boot development",
+              value: "java",
+            },
           ],
         },
       ]);
@@ -96,11 +100,11 @@ describe('Main Function Coverage Testing', () => {
       expect(mockMkdirSync).toHaveBeenCalledWith(path.join('/test/project', '.memory-bank'), { recursive: true });
       expect(mockMkdirSync).toHaveBeenCalledWith(path.join('/test/project', '.specs'), { recursive: true });
       expect(mockCopyFileSync).toHaveBeenCalledWith(
-        path.join(__dirname, "..", "Lua", ".cursorrules"),
+        path.join(__dirname, "..", "src", "cursorrules", ".cursorrules"),
         path.join('/test/project', '.cursorrules')
       );
       expect(mockCopyFileSync).toHaveBeenCalledWith(
-        path.join(__dirname, "..", "Lua", ".cursorrules"),
+        path.join(__dirname, "..", "src", "developmentGuides", "Lua", "developmentGuide.md"),
         path.join('/test/project', '.memory-bank', 'developmentGuide.md')
       );
     });
@@ -117,11 +121,11 @@ describe('Main Function Coverage Testing', () => {
 
       expect(mockConsoleLog).toHaveBeenCalledWith("\n📦 Installing Web Memory Bank...\n");
       expect(mockCopyFileSync).toHaveBeenCalledWith(
-        path.join(__dirname, "..", "Web", ".cursorrules"),
+        path.join(__dirname, "..", "src", "cursorrules", ".cursorrules"),
         path.join('/test/project', '.cursorrules')
       );
       expect(mockCopyFileSync).toHaveBeenCalledWith(
-        path.join(__dirname, "..", "Web", "developmentGuide.md"),
+        path.join(__dirname, "..", "src", "developmentGuides", "Web", "developmentGuide.md"),
         path.join('/test/project', '.memory-bank', 'developmentGuide.md')
       );
     });
@@ -160,7 +164,7 @@ describe('Main Function Coverage Testing', () => {
 
       await main();
 
-      const expectedPath = path.join(__dirname, "..", "Lua", ".cursorrules");
+      const expectedPath = path.join(__dirname, "..", "src", "cursorrules", ".cursorrules");
       expect(mockConsoleError).toHaveBeenCalledWith("\n❌ Error:", `Source .cursorrules not found: ${expectedPath}`);
       expect(mockProcessExit).toHaveBeenCalledWith(1);
     });
@@ -175,7 +179,7 @@ describe('Main Function Coverage Testing', () => {
 
       await main();
 
-      const expectedPath = path.join(__dirname, "..", "Web", "developmentGuide.md");
+      const expectedPath = path.join(__dirname, "..", "src", "developmentGuides", "Web", "developmentGuide.md");
       expect(mockConsoleError).toHaveBeenCalledWith("\n❌ Error:", `Source development guide not found: ${expectedPath}`);
       expect(mockProcessExit).toHaveBeenCalledWith(1);
     });
@@ -235,8 +239,8 @@ describe('Main Function Coverage Testing', () => {
 
       await main();
 
-      const expectedCursorRulesPath = path.join(__dirname, "..", "Lua", ".cursorrules");
-      const expectedDevelopmentGuidePath = path.join(__dirname, "..", "Lua", ".cursorrules");
+      const expectedCursorRulesPath = path.join(__dirname, "..", "src", "cursorrules", ".cursorrules");
+      const expectedDevelopmentGuidePath = path.join(__dirname, "..", "src", "developmentGuides", "Lua", "developmentGuide.md");
       
       expect(mockCopyFileSync).toHaveBeenCalledWith(
         expectedCursorRulesPath,
@@ -254,8 +258,8 @@ describe('Main Function Coverage Testing', () => {
 
       await main();
 
-      const expectedCursorRulesPath = path.join(__dirname, "..", "Web", ".cursorrules");
-      const expectedDevelopmentGuidePath = path.join(__dirname, "..", "Web", "developmentGuide.md");
+      const expectedCursorRulesPath = path.join(__dirname, "..", "src", "cursorrules", ".cursorrules");
+      const expectedDevelopmentGuidePath = path.join(__dirname, "..", "src", "developmentGuides", "Web", "developmentGuide.md");
       
       expect(mockCopyFileSync).toHaveBeenCalledWith(
         expectedCursorRulesPath,
@@ -296,11 +300,11 @@ describe('Main Function Coverage Testing', () => {
       await main();
 
       expect(mockCopyFileSync).toHaveBeenCalledWith(
-        path.join(__dirname, "..", "Lua", ".cursorrules"),
+        path.join(__dirname, "..", "src", "cursorrules", ".cursorrules"),
         path.join('/test/project', '.cursorrules')
       );
       expect(mockCopyFileSync).toHaveBeenCalledWith(
-        path.join(__dirname, "..", "Lua", ".cursorrules"),
+        path.join(__dirname, "..", "src", "developmentGuides", "Lua", "developmentGuide.md"),
         path.join('/test/project', '.memory-bank', 'developmentGuide.md')
       );
     });

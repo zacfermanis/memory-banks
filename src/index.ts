@@ -13,16 +13,49 @@ interface MemoryBankType {
 const MEMORY_BANK_TYPES: Record<string, MemoryBankType> = {
   lua: {
     name: 'Lua',
-    cursorRulesPath: path.join(__dirname, '..', 'Lua', '.cursorrules'),
-    developmentGuidePath: path.join(__dirname, '..', 'Lua', '.cursorrules'), // Using .cursorrules as development guide for Lua
+    cursorRulesPath: path.join(
+      process.cwd(),
+      'src',
+      'cursorrules',
+      '.cursorrules'
+    ),
+    developmentGuidePath: path.join(
+      process.cwd(),
+      'src',
+      'developmentGuides',
+      'Lua',
+      'developmentGuide.md'
+    ),
   },
   web: {
     name: 'Web',
-    cursorRulesPath: path.join(__dirname, '..', 'Web', '.cursorrules'),
+    cursorRulesPath: path.join(
+      process.cwd(),
+      'src',
+      'cursorrules',
+      '.cursorrules'
+    ),
     developmentGuidePath: path.join(
-      __dirname,
-      '..',
+      process.cwd(),
+      'src',
+      'developmentGuides',
       'Web',
+      'developmentGuide.md'
+    ),
+  },
+  java: {
+    name: 'Java',
+    cursorRulesPath: path.join(
+      process.cwd(),
+      'src',
+      'cursorrules',
+      '.cursorrules'
+    ),
+    developmentGuidePath: path.join(
+      process.cwd(),
+      'src',
+      'developmentGuides',
+      'Java',
       'developmentGuide.md'
     ),
   },
@@ -43,6 +76,10 @@ export async function main() {
           {
             name: 'Web - For TypeScript/React/Next.js development',
             value: 'web',
+          },
+          {
+            name: 'Java - For Java/Spring Boot development',
+            value: 'java',
           },
         ],
       },
