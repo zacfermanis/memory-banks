@@ -1,4 +1,4 @@
-name: Release and Publish
+name: Deploy and Publish
 
 on:
   push:
@@ -6,25 +6,23 @@ on:
       - 'v*'
   workflow_dispatch:
     inputs:
-      version_type:
-        description: 'Version type to release'
+      deploy_type:
+        description: 'Deployment type'
         required: true
-        default: 'patch'
+        default: 'npm'
         type: choice
         options:
-        - patch
-        - minor
-        - major
-        - prerelease
+        - npm
+        - github
+        - full
 
 env:
   NODE_VERSION: '18'
-  NPM_VERSION: 'latest'
 
 jobs:
-  # Pre-release Validation
-  pre-release-validation:
-    name: Pre-release Validation
+  # Pre-deployment Validation
+  pre-deployment:
+    name: Pre-deployment Validation
     runs-on: ubuntu-latest
     
     steps:
@@ -42,67 +40,26 @@ jobs:
     - name: Install dependencies
       run: npm ci
       
-    - name: Run quality control
-      run: npm run quality:all
+    - name: Run pre-publish quality control
+      run: npm run quality:pre-publish
       
-    - name: Run distribution validation
+    - name: Run pre-publish security
+      run: npm run security:pre-publish
+      
+    - name: Run pre-publish optimization
+      run: npm run optimize:pre-publish
+      
+    - name: Validate distribution
       run: npm run distribute:validate
       
     - name: Check Git status
       run: npm run git:check-clean
-      
-    - name: Validate version
-      run: npm run version:validate
-
-  # Version Management
-  version-management:
-    name: Version Management
-    runs-on: ubuntu-latest
-    needs: pre-release-validation
-    if: github.event_name == 'workflow_dispatch'
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
-        
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Configure Git
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        
-    - name: Bump version
-      run: |
-        if [ "${{ github.event.inputs.version_type }}" = "prerelease" ]; then
-          npm run version:prerelease
-        elif [ "${{ github.event.inputs.version_type }}" = "minor" ]; then
-          npm run version:minor
-        elif [ "${{ github.event.inputs.version_type }}" = "major" ]; then
-          npm run version:major
-        else
-          npm run version:patch
-        fi
-        
-    - name: Push changes
-      run: |
-        git push --follow-tags origin HEAD
 
   # Build and Package
-  build-and-package:
+  build-package:
     name: Build and Package
     runs-on: ubuntu-latest
-    needs: [pre-release-validation, version-management]
+    needs: pre-deployment
     
     steps:
     - name: Checkout code
@@ -140,8 +97,8 @@ jobs:
   publish-npm:
     name: Publish to npm
     runs-on: ubuntu-latest
-    needs: build-and-package
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [pre-deployment, build-package]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') || github.event.inputs.deploy_type == 'npm' || github.event.inputs.deploy_type == 'full'
     
     steps:
     - name: Checkout code
@@ -160,17 +117,23 @@ jobs:
     - name: Build project
       run: npm run build
       
+    - name: Check npm authentication
+      run: npm run publish:check-auth
+      
+    - name: Run preflight checks
+      run: npm run publish:preflight
+      
     - name: Publish to npm
       run: npm run distribute:npm
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   # Create GitHub Release
-  create-release:
+  create-github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [build-and-package, publish-npm]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [pre-deployment, build-package]
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') || github.event.inputs.deploy_type == 'github' || github.event.inputs.deploy_type == 'full'
     
     steps:
     - name: Checkout code
@@ -235,12 +198,12 @@ jobs:
         asset_name: memory-banks-${{ github.ref_name }}.tgz
         asset_content_type: application/gzip
 
-  # Post-release Validation
-  post-release-validation:
-    name: Post-release Validation
+  # Post-deployment Validation
+  post-deployment:
+    name: Post-deployment Validation
     runs-on: ubuntu-latest
-    needs: [publish-npm, create-release]
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [publish-npm, create-github-release]
+    if: always()
     
     steps:
     - name: Checkout code
@@ -258,17 +221,26 @@ jobs:
     - name: Test published package
       run: npm run distribute:test
       
-    - name: Validate npm package
-      run: npm view memory-banks@${{ github.ref_name }}
+    - name: Test installation
+      run: npm run distribute:install
       
-    - name: Test npx installation
-      run: npx memory-banks@${{ github.ref_name }} --version
+    - name: Monitor deployment
+      run: npm run deploy:monitor
       
-    - name: Generate release report
+    - name: Validate deployment
+      run: npm run deploy:validate
+      
+    - name: Generate deployment analytics
+      run: npm run deploy:analytics
+      
+    - name: Check deployment status
+      run: npm run deploy:status
+      
+    - name: Generate deployment summary
       run: |
-        echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+        echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
         echo "- Version: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-        echo "- Published to npm: ✅" >> $GITHUB_STEP_SUMMARY
-        echo "- GitHub Release: ✅" >> $GITHUB_STEP_SUMMARY
-        echo "- Package size: $(npm view memory-banks@${{ github.ref_name }} dist.size)" >> $GITHUB_STEP_SUMMARY
-        echo "- Dependencies: $(npm view memory-banks@${{ github.ref_name }} dependencies | wc -l)" >> $GITHUB_STEP_SUMMARY 
+        echo "- npm Package: ${{ needs.publish-npm.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- GitHub Release: ${{ needs.create-github-release.result == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Package size: $(npm view memory-banks@${{ github.ref_name }} dist.size 2>/dev/null || 'N/A')" >> $GITHUB_STEP_SUMMARY
+        echo "- Deployment status: ${{ needs.publish-npm.result == 'success' || needs.create-github-release.result == 'success' && 'SUCCESS' || 'FAILED' }}" >> $GITHUB_STEP_SUMMARY 
