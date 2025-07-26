@@ -1,58 +1,58 @@
 import { Command } from 'commander';
-import chalk from 'chalk';
 import { TemplateRegistry } from '../../services/templateRegistry';
+import { Logger } from '../../utils/logger';
 
 export const infoCommand = (program: Command): void => {
   program
     .command('info <template-name>')
     .description('Show detailed template information')
+    .addHelpText(
+      'after',
+      `
+Examples:
+  $ memory-banks info typescript         # Show info for typescript template
+
+Troubleshooting:
+  If the template is not found, run 'memory-banks list' to see available templates.
+  For more, run: memory-banks help info
+    `
+    )
     .action(async (templateName: string) => {
       try {
+        Logger.initialize();
         const registry = new TemplateRegistry();
         const template = await registry.getTemplate(templateName);
-
-        console.log(chalk.blue(`📋 Template: ${chalk.green(template.name)}`));
-        console.log(chalk.gray(`Version: ${template.version}`));
-        console.log('');
-        console.log(chalk.white(template.description));
-        console.log('');
-
-        // Show files that will be created
+        Logger.info(`Template: ${template.name}`);
+        Logger.debug(`Version: ${template.version}`);
+        Logger.info(template.description);
         if (template.files && template.files.length > 0) {
-          console.log(chalk.blue('📁 Files to be created:'));
-          template.files.forEach((file) => {
-            const path = chalk.cyan(file.path);
-            const overwrite = file.overwrite ? chalk.yellow(' (overwrite)') : '';
-            console.log(`  ${path}${overwrite}`);
+          Logger.info('Files to be created:');
+          template.files.forEach(file => {
+            const overwrite = file.overwrite ? ' (overwrite)' : '';
+            Logger.debug(`  ${file.path}${overwrite}`);
           });
-          console.log('');
         }
-
-        // Show configuration options
         if (template.options && template.options.length > 0) {
-          console.log(chalk.blue('⚙️  Configuration Options:'));
-          template.options.forEach((option) => {
-            const name = chalk.green(option.name);
-            const type = chalk.gray(`(${option.type})`);
-            const required = option.required ? chalk.red(' *required') : '';
-            const defaultVal = option.default !== undefined ? chalk.gray(` = ${option.default}`) : '';
-            
-            console.log(`  ${name} ${type}${required}${defaultVal}`);
-            console.log(`    ${option.description}`);
-            
+          Logger.info('Configuration Options:');
+          template.options.forEach(option => {
+            const required = option.required ? ' *required' : '';
+            const defaultVal =
+              option.default !== undefined ? ` = ${option.default}` : '';
+            Logger.debug(
+              `  ${option.name} (${option.type})${required}${defaultVal}`
+            );
+            Logger.debug(`    ${option.description}`);
             if (option.choices && option.choices.length > 0) {
-              const choices = option.choices.map(c => chalk.cyan(c)).join(', ');
-              console.log(`    Choices: ${choices}`);
+              Logger.debug(`    Choices: ${option.choices.join(', ')}`);
             }
-            console.log('');
           });
         }
-
-        console.log(chalk.gray('Use "memory-banks init --template ' + template.name + '" to initialize this template'));
-
+        Logger.info(
+          `Use "memory-banks init --template ${template.name}" to initialize this template`
+        );
       } catch (error) {
-        console.error(chalk.red('❌ Failed to get template information:'), error);
+        Logger.error('Failed to get template information:', error);
         process.exit(1);
       }
     });
-}; 
+};

@@ -1,4 +1,4 @@
-import { FileSystemUtils } from '../../src/utils/fileSystem';
+import { FileSystemUtils, FileSystemErrorType, ErrorSeverity, FileSystemError } from '../../src/utils/fileSystem';
 import { promises as fs } from 'fs';
 
 // Mock fs module
@@ -10,12 +10,26 @@ jest.mock('fs', () => ({
     readFile: jest.fn(),
     readdir: jest.fn(),
     copyFile: jest.fn(),
+    stat: jest.fn(),
+    chmod: jest.fn(),
+    unlink: jest.fn(),
+    rename: jest.fn(),
+    symlink: jest.fn(),
   },
+}));
+
+// Mock crypto module
+jest.mock('crypto', () => ({
+  createHash: jest.fn(() => ({
+    update: jest.fn().mockReturnThis(),
+    digest: jest.fn(() => 'mock-checksum')
+  }))
 }));
 
 describe('FileSystemUtils', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe('ensureDirectory', () => {
@@ -59,6 +73,696 @@ describe('FileSystemUtils', () => {
       const result = await FileSystemUtils.fileExists('/test/file.txt');
       
       expect(result).toBe(false);
+    });
+  });
+
+  describe('detectFileConflict', () => {
+    it('should return null if source does not exist', async () => {
+      jest.spyOn(FileSystemUtils, 'fileExists')
+        .mockResolvedValueOnce(false) // source doesn't exist
+        .mockResolvedValueOnce(true); // destination exists
+      
+      const result = await FileSystemUtils.detectFileConflict('/source.txt', '/dest.txt');
+      
+      expect(result).toBeNull();
+    });
+
+    it('should return null if destination does not exist', async () => {
+      jest.spyOn(FileSystemUtils, 'fileExists')
+        .mockResolvedValueOnce(true) // source exists
+        .mockResolvedValueOnce(false); // destination doesn't exist
+      
+      const result = await FileSystemUtils.detectFileConflict('/source.txt', '/dest.txt');
+      
+      expect(result).toBeNull();
+    });
+
+    it('should return conflict if both files exist and are different', async () => {
+      jest.spyOn(FileSystemUtils, 'fileExists')
+        .mockResolvedValue(true);
+      
+      jest.spyOn(FileSystemUtils, 'getFileMetadata')
+        .mockResolvedValueOnce({
+          size: 100,
+          created: new Date(),
+          modified: new Date(),
+          permissions: '644',
+          owner: 'user',
+          checksum: 'checksum1'
+        })
+        .mockResolvedValueOnce({
+          size: 200,
+          created: new Date(),
+          modified: new Date(),
+          permissions: '644',
+          owner: 'user',
+          checksum: 'checksum2'
+        });
+      
+      const result = await FileSystemUtils.detectFileConflict('/source.txt', '/dest.txt');
+      
+      expect(result).not.toBeNull();
+      expect(result?.type).toBe('overwrite');
+      expect(result?.source).toBe('/source.txt');
+      expect(result?.destination).toBe('/dest.txt');
+    });
+
+    it('should return null if files are identical', async () => {
+      jest.spyOn(FileSystemUtils, 'fileExists')
+        .mockResolvedValue(true);
+      
+      jest.spyOn(FileSystemUtils, 'getFileMetadata')
+        .mockResolvedValue({
+          size: 100,
+          created: new Date(),
+          modified: new Date(),
+          permissions: '644',
+          owner: 'user',
+          checksum: 'same-checksum'
+        });
+      
+      const result = await FileSystemUtils.detectFileConflict('/source.txt', '/dest.txt');
+      
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('categorizeConflict', () => {
+    it('should categorize as low for empty files', () => {
+      const conflict = {
+        type: 'overwrite' as const,
+        source: '/source.txt',
+        destination: '/dest.txt',
+        sourceMetadata: { size: 0 } as any,
+        destinationMetadata: { size: 0 } as any
+      };
+      
+      const result = FileSystemUtils.categorizeConflict(conflict);
+      
+      expect(result).toBe('low');
+    });
+
+    it('should categorize as high for large files', () => {
+      const conflict = {
+        type: 'overwrite' as const,
+        source: '/source.txt',
+        destination: '/dest.txt',
+        sourceMetadata: { size: 2 * 1024 * 1024 } as any,
+        destinationMetadata: { size: 100 } as any
+      };
+      
+      const result = FileSystemUtils.categorizeConflict(conflict);
+      
+      expect(result).toBe('high');
+    });
+
+    it('should categorize as medium for normal files', () => {
+      const conflict = {
+        type: 'overwrite' as const,
+        source: '/source.txt',
+        destination: '/dest.txt',
+        sourceMetadata: { size: 1024 } as any,
+        destinationMetadata: { size: 512 } as any
+      };
+      
+      const result = FileSystemUtils.categorizeConflict(conflict);
+      
+      expect(result).toBe('medium');
+    });
+  });
+
+  describe('conflict resolution strategies', () => {
+    const mockConflict = {
+      type: 'overwrite' as const,
+      source: '/source.txt',
+      destination: '/dest.txt',
+      sourceMetadata: { size: 100 } as any,
+      destinationMetadata: { size: 200 } as any
+    };
+
+    it('should create overwrite strategy', () => {
+      const result = FileSystemUtils.createOverwriteStrategy(mockConflict);
+      
+      expect(result.strategy).toBe('overwrite');
+      expect(result.userConfirmed).toBe(false);
+      expect(result.backupPath).toContain('.backup.');
+    });
+
+    it('should create backup and rename strategy', () => {
+      const result = FileSystemUtils.createBackupRenameStrategy(mockConflict);
+      
+      expect(result.strategy).toBe('rename');
+      expect(result.userConfirmed).toBe(false);
+      expect(result.backupPath).toContain('.backup.');
+      expect(result.newPath).toContain('.txt');
+    });
+
+    it('should create merge strategy', () => {
+      const result = FileSystemUtils.createMergeStrategy(mockConflict);
+      
+      expect(result.strategy).toBe('merge');
+      expect(result.userConfirmed).toBe(false);
+      expect(result.mergeStrategy?.conflictMarkers).toBe(true);
+    });
+
+    it('should create skip strategy', () => {
+      const result = FileSystemUtils.createSkipStrategy(mockConflict);
+      
+      expect(result.strategy).toBe('skip');
+      expect(result.userConfirmed).toBe(false);
+    });
+  });
+
+  describe('generateConflictPrompt', () => {
+    it('should generate conflict prompt with severity', () => {
+      const conflict = {
+        type: 'overwrite' as const,
+        source: '/source.txt',
+        destination: '/dest.txt',
+        sourceMetadata: { size: 100 } as any,
+        destinationMetadata: { size: 200 } as any
+      };
+      
+      const result = FileSystemUtils.generateConflictPrompt(conflict);
+      
+      expect(result).toContain('File conflict detected');
+      expect(result).toContain('/source.txt');
+      expect(result).toContain('/dest.txt');
+      expect(result).toContain('Choose resolution strategy');
+    });
+  });
+
+  describe('resolveConflictAutomatically', () => {
+    it('should skip high severity conflicts', async () => {
+      const conflict = {
+        type: 'overwrite' as const,
+        source: '/source.txt',
+        destination: '/dest.txt',
+        sourceMetadata: { size: 2 * 1024 * 1024 } as any,
+        destinationMetadata: { size: 100 } as any
+      };
+      
+      const result = await FileSystemUtils.resolveConflictAutomatically(conflict);
+      
+      expect(result.strategy).toBe('skip');
+    });
+
+    it('should overwrite medium severity conflicts', async () => {
+      const conflict = {
+        type: 'overwrite' as const,
+        source: '/source.txt',
+        destination: '/dest.txt',
+        sourceMetadata: { size: 1024 } as any,
+        destinationMetadata: { size: 512 } as any
+      };
+      
+      const result = await FileSystemUtils.resolveConflictAutomatically(conflict);
+      
+      expect(result.strategy).toBe('overwrite');
+    });
+  });
+
+  describe('resolveConflictIntelligently', () => {
+    it('should rename if file types do not match', async () => {
+      const conflict = {
+        type: 'overwrite' as const,
+        source: '/source.txt',
+        destination: '/dest.json',
+        sourceMetadata: { size: 100 } as any,
+        destinationMetadata: { size: 200 } as any
+      };
+      
+      const result = await FileSystemUtils.resolveConflictIntelligently(conflict);
+      
+      expect(result.strategy).toBe('rename');
+    });
+
+    it('should merge text files', async () => {
+      const conflict = {
+        type: 'overwrite' as const,
+        source: '/source.md',
+        destination: '/dest.md',
+        sourceMetadata: { size: 100 } as any,
+        destinationMetadata: { size: 200 } as any
+      };
+      
+      const result = await FileSystemUtils.resolveConflictIntelligently(conflict);
+      
+      expect(result.strategy).toBe('merge');
+    });
+
+    it('should overwrite binary files', async () => {
+      const conflict = {
+        type: 'overwrite' as const,
+        source: '/source.jpg',
+        destination: '/dest.jpg',
+        sourceMetadata: { size: 100 } as any,
+        destinationMetadata: { size: 200 } as any
+      };
+      
+      const result = await FileSystemUtils.resolveConflictIntelligently(conflict);
+      
+      expect(result.strategy).toBe('overwrite');
+    });
+  });
+
+  describe('getFileMetadata', () => {
+    it('should return file metadata with checksum', async () => {
+      const mockStat = fs.stat as jest.MockedFunction<typeof fs.stat>;
+      const mockReadFile = fs.readFile as jest.MockedFunction<typeof fs.readFile>;
+      
+      mockStat.mockResolvedValue({
+        size: 100,
+        birthtime: new Date('2023-01-01'),
+        mtime: new Date('2023-01-02'),
+        mode: 0o644
+      } as any);
+      
+      mockReadFile.mockResolvedValue('file content');
+      
+      const result = await FileSystemUtils.getFileMetadata('/test/file.txt');
+      
+      expect(result.size).toBe(100);
+      expect(result.permissions).toBe('644');
+      expect(result.checksum).toBe('mock-checksum');
+    });
+  });
+
+  describe('createBackup', () => {
+    it('should create file backup', async () => {
+      const mockCopyFile = fs.copyFile as jest.MockedFunction<typeof fs.copyFile>;
+      const mockStat = fs.stat as jest.MockedFunction<typeof fs.stat>;
+      const mockReadFile = fs.readFile as jest.MockedFunction<typeof fs.readFile>;
+      
+      mockCopyFile.mockResolvedValue(undefined);
+      mockStat.mockResolvedValue({ size: 1024 } as any);
+      mockReadFile.mockResolvedValue('file content');
+      
+      const result = await FileSystemUtils.createBackup('/test/file.txt', 'file');
+      
+      expect(result.type).toBe('file');
+      expect(result.target).toBe('/test/file.txt');
+      expect(result.status).toBe('completed');
+      expect(result.backupPath).toContain('.backup.');
+    });
+  });
+
+  describe('checkFilePermissions', () => {
+    it('should return permission information', async () => {
+      const mockStat = fs.stat as jest.MockedFunction<typeof fs.stat>;
+      
+      mockStat.mockResolvedValue({
+        mode: 0o644
+      } as any);
+      
+      const result = await FileSystemUtils.checkFilePermissions('/test/file.txt');
+      
+      expect(result.readable).toBe(true);
+      expect(result.writable).toBe(true);
+      expect(result.executable).toBe(false);
+      expect(result.permissions).toBe('644');
+    });
+
+    it('should handle permission errors', async () => {
+      const mockStat = fs.stat as jest.MockedFunction<typeof fs.stat>;
+      
+      mockStat.mockRejectedValue(new Error('Permission denied'));
+      
+      const result = await FileSystemUtils.checkFilePermissions('/test/file.txt');
+      
+      expect(result.readable).toBe(false);
+      expect(result.writable).toBe(false);
+      expect(result.executable).toBe(false);
+      expect(result.permissions).toBe('000');
+    });
+  });
+
+  describe('getDiskSpace', () => {
+    it('should return disk space information', async () => {
+      const mockFs = require('fs');
+      mockFs.statfsSync = jest.fn().mockReturnValue({
+        bavail: 1000,
+        bsize: 4096,
+        blocks: 2000
+      });
+      
+      const result = await FileSystemUtils.getDiskSpace('/test/dir');
+      
+      expect(result.available).toBe(4096000);
+      expect(result.total).toBe(8192000);
+      expect(result.sufficient).toBe(true);
+    });
+
+    it('should handle unsupported platforms', async () => {
+      const mockFs = require('fs');
+      mockFs.statfsSync = jest.fn().mockImplementation(() => {
+        throw new Error('Not supported');
+      });
+      
+      const result = await FileSystemUtils.getDiskSpace('/test/dir');
+      
+      expect(result.available).toBe(0);
+      expect(result.sufficient).toBe(true);
+    });
+  });
+
+  describe('checkSpaceThresholds', () => {
+    it('should return critical warning for low space', async () => {
+      jest.spyOn(FileSystemUtils, 'getDiskSpace').mockResolvedValue({
+        available: 25 * 1024 * 1024, // 25MB (below critical threshold)
+        total: 1000 * 1024 * 1024, // 1GB
+        used: 975 * 1024 * 1024,
+        sufficient: false,
+        warningThreshold: 100 * 1024 * 1024,
+        criticalThreshold: 50 * 1024 * 1024
+      });
+      
+      const result = await FileSystemUtils.checkSpaceThresholds('/test/dir');
+      
+      expect(result.critical).toBe(true);
+      expect(result.warnings.length).toBeGreaterThan(0);
+      expect(result.recommendations.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('detectFileSystemType', () => {
+    it('should detect Windows file system', async () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'win32' });
+      
+      const result = await FileSystemUtils.detectFileSystemType('/test/dir');
+      
+      expect(result.type).toBe('NTFS');
+      expect(result.caseSensitive).toBe(false);
+      expect(result.maxPathLength).toBe(260);
+      
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
+
+    it('should detect macOS file system', async () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'darwin' });
+      
+      const result = await FileSystemUtils.detectFileSystemType('/test/dir');
+      
+      expect(result.type).toBe('APFS');
+      expect(result.caseSensitive).toBe(false);
+      expect(result.maxPathLength).toBe(1024);
+      
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
+
+    it('should detect Linux file system', async () => {
+      const originalPlatform = process.platform;
+      Object.defineProperty(process, 'platform', { value: 'linux' });
+      
+      const result = await FileSystemUtils.detectFileSystemType('/test/dir');
+      
+      expect(result.type).toBe('ext4');
+      expect(result.caseSensitive).toBe(true);
+      expect(result.maxPathLength).toBe(4096);
+      
+      Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
+  });
+
+  describe('validateFileOperation', () => {
+    it('should validate safe file operation', async () => {
+      jest.restoreAllMocks();
+      jest.spyOn(FileSystemUtils, 'fileExists').mockResolvedValue(true);
+      jest.spyOn(FileSystemUtils, 'directoryExists').mockResolvedValue(true);
+      jest.spyOn(FileSystemUtils, 'checkFilePermissions').mockResolvedValue({
+        readable: true,
+        writable: true,
+        executable: false,
+        owner: 'user',
+        group: 'group',
+        permissions: '644'
+      });
+      jest.spyOn(FileSystemUtils, 'checkSpaceThresholds').mockResolvedValue({
+        warnings: [],
+        critical: false,
+        recommendations: []
+      });
+      jest.spyOn(FileSystemUtils, 'detectFileConflict').mockResolvedValue(null);
+      
+      const result = await FileSystemUtils.validateFileOperation('copy', '/source.txt', '/dest.txt');
+      
+      expect(result.safe).toBe(true);
+      expect(result.errors.length).toBe(0);
+    });
+
+    it('should detect unsafe operation', async () => {
+      jest.spyOn(FileSystemUtils, 'fileExists').mockResolvedValue(false);
+      
+      const result = await FileSystemUtils.validateFileOperation('copy', '/source.txt', '/dest.txt');
+      
+      expect(result.safe).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('error categorization', () => {
+    it('should classify permission denied error', () => {
+      const error = new Error('Permission denied');
+      (error as any).code = 'EACCES';
+      
+      const result = FileSystemUtils.classifyError(error);
+      
+      expect(result).toBe(FileSystemErrorType.PERMISSION_DENIED);
+    });
+
+    it('should classify file not found error', () => {
+      const error = new Error('ENOENT: no such file or directory');
+      (error as any).code = 'ENOENT';
+      
+      const result = FileSystemUtils.classifyError(error, '/test/file.txt');
+      
+      expect(result).toBe(FileSystemErrorType.FILE_NOT_FOUND);
+    });
+
+    it('should classify disk full error', () => {
+      const error = new Error('ENOSPC: no space left on device');
+      (error as any).code = 'ENOSPC';
+      
+      const result = FileSystemUtils.classifyError(error);
+      
+      expect(result).toBe(FileSystemErrorType.DISK_FULL);
+    });
+  });
+
+  describe('assessErrorSeverity', () => {
+    it('should assess disk full as critical', () => {
+      const result = FileSystemUtils.assessErrorSeverity(FileSystemErrorType.DISK_FULL);
+      
+      expect(result).toBe(ErrorSeverity.CRITICAL);
+    });
+
+    it('should assess permission denied as high', () => {
+      const result = FileSystemUtils.assessErrorSeverity(FileSystemErrorType.PERMISSION_DENIED);
+      
+      expect(result).toBe(ErrorSeverity.HIGH);
+    });
+
+    it('should assess file exists as medium', () => {
+      const result = FileSystemUtils.assessErrorSeverity(FileSystemErrorType.FILE_EXISTS);
+      
+      expect(result).toBe(ErrorSeverity.MEDIUM);
+    });
+
+    it('should assess file not found as low', () => {
+      const result = FileSystemUtils.assessErrorSeverity(FileSystemErrorType.FILE_NOT_FOUND);
+      
+      expect(result).toBe(ErrorSeverity.LOW);
+    });
+  });
+
+  describe('createCategorizedError', () => {
+    it('should create categorized error', () => {
+      const originalError = new Error('Permission denied');
+      (originalError as any).code = 'EACCES';
+      
+      const result = FileSystemUtils.createCategorizedError(originalError, '/test/file.txt', 'read');
+      
+      expect(result.type).toBe(FileSystemErrorType.PERMISSION_DENIED);
+      expect(result.severity).toBe(ErrorSeverity.HIGH);
+      expect(result.message).toBe('Permission denied');
+      expect(result.path).toBe('/test/file.txt');
+      expect(result.originalError).toBe(originalError);
+      expect(result.recoverable).toBe(true);
+      expect(result.suggestions.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('generateErrorSuggestions', () => {
+    it('should generate suggestions for permission denied', () => {
+      const suggestions = FileSystemUtils.generateErrorSuggestions(FileSystemErrorType.PERMISSION_DENIED);
+      
+      expect(suggestions).toContain('Check file permissions');
+      expect(suggestions).toContain('Run with elevated privileges if necessary');
+    });
+
+    it('should generate suggestions for file not found', () => {
+      const suggestions = FileSystemUtils.generateErrorSuggestions(FileSystemErrorType.FILE_NOT_FOUND);
+      
+      expect(suggestions).toContain('Verify the file path is correct');
+      expect(suggestions).toContain('Check if the file exists');
+    });
+
+    it('should generate suggestions for disk full', () => {
+      const suggestions = FileSystemUtils.generateErrorSuggestions(FileSystemErrorType.DISK_FULL);
+      
+      expect(suggestions).toContain('Free up disk space');
+      expect(suggestions).toContain('Check available storage');
+    });
+  });
+
+  describe('isErrorRecoverable', () => {
+    it('should return false for disk full error', () => {
+      const result = FileSystemUtils.isErrorRecoverable(FileSystemErrorType.DISK_FULL);
+      
+      expect(result).toBe(false);
+    });
+
+    it('should return false for read-only filesystem error', () => {
+      const result = FileSystemUtils.isErrorRecoverable(FileSystemErrorType.READ_ONLY_FILESYSTEM);
+      
+      expect(result).toBe(false);
+    });
+
+    it('should return true for permission denied error', () => {
+      const result = FileSystemUtils.isErrorRecoverable(FileSystemErrorType.PERMISSION_DENIED);
+      
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('attemptAutomaticRecovery', () => {
+    it('should attempt recovery for file not found', async () => {
+      const error: FileSystemError = {
+        type: FileSystemErrorType.FILE_NOT_FOUND,
+        severity: ErrorSeverity.LOW,
+        message: 'File not found',
+        path: '/test/file.txt',
+        timestamp: new Date(),
+        recoverable: true,
+        suggestions: []
+      };
+      
+      jest.spyOn(FileSystemUtils, 'ensureDirectory').mockResolvedValue(undefined);
+      
+      const result = await FileSystemUtils.attemptAutomaticRecovery(error, 'read');
+      
+      expect(result.success).toBe(true);
+      expect(result.recovered).toBe(true);
+    });
+
+    it('should not recover after max retries', async () => {
+      const error: FileSystemError = {
+        type: FileSystemErrorType.FILE_NOT_FOUND,
+        severity: ErrorSeverity.LOW,
+        message: 'File not found',
+        path: '/test/file.txt',
+        timestamp: new Date(),
+        recoverable: true,
+        suggestions: []
+      };
+      
+      const result = await FileSystemUtils.attemptAutomaticRecovery(error, 'read', 3);
+      
+      expect(result.success).toBe(false);
+      expect(result.recovered).toBe(false);
+    });
+  });
+
+  describe('generateUserFriendlyMessage', () => {
+    it('should generate user-friendly error message', () => {
+      const error: FileSystemError = {
+        type: FileSystemErrorType.PERMISSION_DENIED,
+        severity: ErrorSeverity.HIGH,
+        message: 'Permission denied',
+        path: '/test/file.txt',
+        timestamp: new Date(),
+        recoverable: true,
+        suggestions: ['Check file permissions', 'Run with elevated privileges']
+      };
+      
+      const result = FileSystemUtils.generateUserFriendlyMessage(error);
+      
+      expect(result).toContain('🚨 Permission denied');
+      expect(result).toContain('Path: /test/file.txt');
+      expect(result).toContain('Check file permissions');
+      expect(result).toContain('Run with elevated privileges');
+    });
+  });
+
+  describe('executeFallbackOperation', () => {
+    it('should execute skip fallback', async () => {
+      const result = await FileSystemUtils.executeFallbackOperation(
+        'read',
+        'skip_on_error',
+        {}
+      );
+      
+      expect(result.success).toBe(true);
+      expect(result.fallbackUsed).toBe(true);
+      expect(result.result).toBe('Operation skipped');
+    });
+
+    it('should execute backup fallback', async () => {
+      const mockCopyFile = fs.copyFile as jest.MockedFunction<typeof fs.copyFile>;
+      mockCopyFile.mockResolvedValue(undefined);
+      
+      const result = await FileSystemUtils.executeFallbackOperation(
+        'read',
+        'use_backup',
+        { backupPath: '/backup.txt', destination: '/dest.txt' }
+      );
+      
+      expect(result.success).toBe(true);
+      expect(result.fallbackUsed).toBe(true);
+      expect(result.result).toBe('Used backup file');
+    });
+
+    it('should execute minimal content fallback', async () => {
+      const mockWriteFile = fs.writeFile as jest.MockedFunction<typeof fs.writeFile>;
+      mockWriteFile.mockResolvedValue(undefined);
+      
+      const result = await FileSystemUtils.executeFallbackOperation(
+        'create',
+        'create_minimal',
+        { destination: '/dest.json', fileType: 'json' }
+      );
+      
+      expect(result.success).toBe(true);
+      expect(result.fallbackUsed).toBe(true);
+      expect(result.result).toBe('Created minimal file');
+    });
+  });
+
+  describe('generateMinimalContent', () => {
+    it('should generate minimal JSON content', () => {
+      const result = FileSystemUtils['generateMinimalContent']('json');
+      
+      expect(result).toBe('{}');
+    });
+
+    it('should generate minimal YAML content', () => {
+      const result = FileSystemUtils['generateMinimalContent']('yaml');
+      
+      expect(result).toBe('# Minimal YAML file');
+    });
+
+    it('should generate minimal Markdown content', () => {
+      const result = FileSystemUtils['generateMinimalContent']('md');
+      
+      expect(result).toBe('# Minimal Markdown file');
+    });
+
+    it('should generate default minimal content', () => {
+      const result = FileSystemUtils['generateMinimalContent']();
+      
+      expect(result).toBe('# Minimal file');
     });
   });
 }); 

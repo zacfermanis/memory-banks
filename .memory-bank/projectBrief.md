@@ -42,4 +42,10 @@ Create a seamless developer experience for implementing memory bank systems that
 - Should integrate well with existing development workflows
 
 ## Timeline
-Personal open-source project with flexible timeline. Focus on Web/TypeScript implementation first, then expand to other languages. 
+Personal open-source project with flexible timeline. Focus on Web/TypeScript implementation first, then expand to other languages.
+
+## Repository Information
+- **GitHub Repository**: https://github.com/zacfermanis/memory-banks.git
+- **Owner**: zacfermanis
+- **Package Name**: memory-banks
+- **License**: MIT 

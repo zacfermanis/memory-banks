@@ -90,19 +90,19 @@ Configure and package the memory-banks CLI tool for distribution via npm, ensuri
     "development",
     "productivity"
   ],
-  "author": "Your Name",
+  "author": "Zac Fermanis",
   "license": "MIT",
   "engines": {
     "node": ">=16.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/memory-banks.git"
+    "url": "https://github.com/zacfermanis/memory-banks.git"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/memory-banks/issues"
+    "url": "https://github.com/zacfermanis/memory-banks/issues"
   },
-  "homepage": "https://github.com/yourusername/memory-banks#readme"
+  "homepage": "https://github.com/zacfermanis/memory-banks#readme"
 }
 ```
 

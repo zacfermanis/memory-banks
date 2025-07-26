@@ -1,7 +1,7 @@
 import { Command } from 'commander';
-import chalk from 'chalk';
 import { TemplateRegistry } from '../../services/templateRegistry';
 import { TemplateConfig } from '../../types';
+import { Logger } from '../../utils/logger';
 
 export const listCommand = (program: Command): void => {
   program
@@ -9,49 +9,60 @@ export const listCommand = (program: Command): void => {
     .description('List available templates')
     .option('-l, --language <language>', 'Filter by programming language')
     .option('-v, --verbose', 'Show detailed template information')
+    .addHelpText(
+      'after',
+      `
+Examples:
+  $ memory-banks list                    # List all templates
+  $ memory-banks list --language lua     # Filter by language
+  $ memory-banks list --verbose          # Show detailed info
+
+Troubleshooting:
+  If no templates are found, check your template directory or run 'memory-banks init'.
+  For more, run: memory-banks help list
+    `
+    )
     .action(async (options: { language?: string; verbose?: boolean }) => {
       try {
+        Logger.initialize({ verbose: !!options.verbose });
         const registry = new TemplateRegistry();
         const templates = await registry.listTemplates(options.language);
 
         if (templates.length === 0) {
-          console.log(chalk.yellow('📝 No templates found'));
+          Logger.warn('No templates found');
           if (options.language) {
-            console.log(chalk.yellow(`   No templates available for language: ${options.language}`));
+            Logger.warn(
+              `No templates available for language: ${options.language}`
+            );
           }
           return;
         }
 
-        console.log(chalk.blue('📋 Available Templates:'));
-        console.log('');
-
+        Logger.info('Available Templates:');
         templates.forEach((template: TemplateConfig) => {
-          const name = chalk.green(template.name);
-          const description = template.description;
-          const version = chalk.gray(`(v${template.version})`);
-          
-          console.log(`  ${name} ${version}`);
-          console.log(`    ${description}`);
-          
+          Logger.info(`${template.name} (v${template.version})`);
+          Logger.info(`  ${template.description}`);
           if (options.verbose) {
             if (template.options && template.options.length > 0) {
-              console.log(chalk.gray(`    Options: ${template.options.length} configuration options`));
+              Logger.debug(
+                `    Options: ${template.options.length} configuration options`
+              );
             }
             if (template.files && template.files.length > 0) {
-              console.log(chalk.gray(`    Files: ${template.files.length} files will be created`));
+              Logger.debug(
+                `    Files: ${template.files.length} files will be created`
+              );
             }
           }
-          console.log('');
         });
-
-        console.log(chalk.blue(`Total: ${templates.length} template(s)`));
-        console.log('');
-        console.log(chalk.gray('Use "memory-banks info <template-name>" for detailed information'));
-        console.log(chalk.gray('Use "memory-banks init --template <template-name>" to initialize'));
-
+        Logger.info(`Total: ${templates.length} template(s)`);
+        Logger.info('Use "memory-banks info <template-name>" for details');
+        Logger.info(
+          'Use "memory-banks init --template <template-name>" to initialize'
+        );
       } catch (error) {
-        console.error(chalk.red('❌ Failed to list templates:'), error);
+        Logger.error('Failed to list templates:', error);
         process.exit(1);
       }
     });
-}; 
+};

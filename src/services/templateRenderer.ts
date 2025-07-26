@@ -2,7 +2,10 @@ export class TemplateRenderer {
   /**
    * Render a template string by replacing variables with values
    */
-  async renderTemplate(template: string, variables: Record<string, any>): Promise<string> {
+  async renderTemplate(
+    template: string,
+    variables: Record<string, any>
+  ): Promise<string> {
     let result = template;
 
     // Replace {{variable}} patterns with values
@@ -27,14 +30,20 @@ export class TemplateRenderer {
   /**
    * Validate that all required variables are provided
    */
-  validateVariables(template: string, providedVariables: Record<string, any>): string[] {
+  validateVariables(
+    template: string,
+    providedVariables: Record<string, any>
+  ): string[] {
     const variablePattern = /\{\{([^}]+)\}\}/g;
     const requiredVariables: string[] = [];
     let match;
 
     while ((match = variablePattern.exec(template)) !== null) {
       const variableName = match[1]?.trim();
-      if (variableName && !this.getNestedValue(providedVariables, variableName)) {
+      if (
+        variableName &&
+        !this.getNestedValue(providedVariables, variableName)
+      ) {
         requiredVariables.push(variableName);
       }
     }
@@ -59,4 +68,4 @@ export class TemplateRenderer {
 
     return [...new Set(variables)]; // Remove duplicates
   }
-} 
+}

@@ -251,7 +251,7 @@ A complete memory bank includes these core files:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/memory-banks.git
+git clone https://github.com/zacfermanis/memory-banks.git
 cd memory-banks
 
 # Install dependencies
@@ -324,9 +324,9 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/memory-banks/issues)
-- **Documentation**: [GitHub Wiki](https://github.com/yourusername/memory-banks/wiki)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/memory-banks/discussions)
+- **Issues**: [GitHub Issues](https://github.com/zacfermanis/memory-banks/issues)
+- **Documentation**: [GitHub Wiki](https://github.com/zacfermanis/memory-banks/wiki)
+- **Discussions**: [GitHub Discussions](https://github.com/zacfermanis/memory-banks/discussions)
 
 ---
 

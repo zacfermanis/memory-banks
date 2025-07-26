@@ -258,7 +258,7 @@ const scanProject = async (rootPath: string): Promise<ProjectInfo> => {
 ### Local Development
 ```bash
 # Clone and setup
-git clone <repository>
+git clone https://github.com/zacfermanis/memory-banks.git
 cd memory-banks
 npm install
 

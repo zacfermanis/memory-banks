@@ -29,6 +29,9 @@ export interface InitOptions {
   dryRun?: boolean;
   force?: boolean;
   outputDir?: string;
+  verbose?: boolean;
+  debug?: boolean;
+  quiet?: boolean;
 }
 
 export interface ProjectConfig {

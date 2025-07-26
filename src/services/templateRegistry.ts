@@ -20,19 +20,19 @@ export class TemplateRegistry {
       for (const dir of templateDirs) {
         const templatePath = path.join(this.templatesPath, dir);
         const stat = await fs.stat(templatePath);
-        
+
         if (stat.isDirectory()) {
           const configPath = path.join(templatePath, 'template.json');
-          
+
           try {
             const configContent = await fs.readFile(configPath, 'utf8');
             const config: TemplateConfig = JSON.parse(configContent);
-            
+
             // Filter by language if specified
             if (language && !this.matchesLanguage(config, language)) {
               continue;
             }
-            
+
             templates.push(config);
           } catch (error) {
             console.warn(`Warning: Could not load template ${dir}: ${error}`);
@@ -50,13 +50,19 @@ export class TemplateRegistry {
    * Get a specific template by name
    */
   async getTemplate(templateName: string): Promise<TemplateConfig> {
-    const configPath = path.join(this.templatesPath, templateName, 'template.json');
-    
+    const configPath = path.join(
+      this.templatesPath,
+      templateName,
+      'template.json'
+    );
+
     try {
       const configContent = await fs.readFile(configPath, 'utf8');
       return JSON.parse(configContent);
     } catch (error) {
-      throw new Error(`Template '${templateName}' not found or invalid: ${error}`);
+      throw new Error(
+        `Template '${templateName}' not found or invalid: ${error}`
+      );
     }
   }
 
@@ -75,13 +81,18 @@ export class TemplateRegistry {
   /**
    * Get template file content
    */
-  async getTemplateFile(templateName: string, filePath: string): Promise<string> {
+  async getTemplateFile(
+    templateName: string,
+    filePath: string
+  ): Promise<string> {
     const fullPath = path.join(this.templatesPath, templateName, filePath);
-    
+
     try {
       return await fs.readFile(fullPath, 'utf8');
     } catch (error) {
-      throw new Error(`Template file '${filePath}' not found in template '${templateName}': ${error}`);
+      throw new Error(
+        `Template file '${filePath}' not found in template '${templateName}': ${error}`
+      );
     }
   }
 
@@ -91,26 +102,26 @@ export class TemplateRegistry {
   private matchesLanguage(template: TemplateConfig, language: string): boolean {
     const templateName = template.name.toLowerCase();
     const languageLower = language.toLowerCase();
-    
+
     // Direct match
     if (templateName.includes(languageLower)) {
       return true;
     }
-    
+
     // Common language mappings
     const languageMappings: Record<string, string[]> = {
-      'typescript': ['ts', 'typescript'],
-      'javascript': ['js', 'javascript'],
-      'lua': ['lua'],
-      'python': ['py', 'python'],
-      'java': ['java'],
-      'csharp': ['cs', 'csharp', 'dotnet'],
-      'go': ['go', 'golang'],
-      'rust': ['rust'],
-      'php': ['php']
+      typescript: ['ts', 'typescript'],
+      javascript: ['js', 'javascript'],
+      lua: ['lua'],
+      python: ['py', 'python'],
+      java: ['java'],
+      csharp: ['cs', 'csharp', 'dotnet'],
+      go: ['go', 'golang'],
+      rust: ['rust'],
+      php: ['php'],
     };
 
     const mappedLanguages = languageMappings[languageLower] || [languageLower];
     return mappedLanguages.some(lang => templateName.includes(lang));
   }
-} 
+}

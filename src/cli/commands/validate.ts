@@ -1,16 +1,29 @@
 import { Command } from 'commander';
-import chalk from 'chalk';
 import { promises as fs } from 'fs';
 import path from 'path';
+import { Logger } from '../../utils/logger';
 
 export const validateCommand = (program: Command): void => {
   program
     .command('validate')
     .description('Validate current memory bank setup')
     .option('-v, --verbose', 'Show detailed validation information')
+    .addHelpText(
+      'after',
+      `
+Examples:
+  $ memory-banks validate                # Basic validation
+  $ memory-banks validate --verbose      # Detailed validation
+
+Troubleshooting:
+  If files are missing, run 'memory-banks init' to set up a complete memory bank system.
+  For more, run: memory-banks help validate
+    `
+    )
     .action(async (options: { verbose?: boolean }) => {
       try {
-        console.log(chalk.blue('🔍 Validating memory bank setup...'));
+        Logger.initialize({ verbose: !!options.verbose });
+        Logger.info('Validating memory bank setup...');
         console.log('');
 
         const memoryBankPath = path.join(process.cwd(), '.memory-bank');
@@ -20,7 +33,7 @@ export const validateCommand = (program: Command): void => {
           'systemPatterns.md',
           'techContext.md',
           'activeContext.md',
-          'progress.md'
+          'progress.md',
         ];
 
         let isValid = true;
@@ -29,10 +42,10 @@ export const validateCommand = (program: Command): void => {
         // Check if .memory-bank directory exists
         try {
           await fs.access(memoryBankPath);
-          console.log(chalk.green('✅ .memory-bank directory found'));
+          Logger.success('✅ .memory-bank directory found');
           fileCount++;
         } catch {
-          console.log(chalk.red('❌ .memory-bank directory not found'));
+          Logger.warn('❌ .memory-bank directory not found');
           isValid = false;
         }
 
@@ -43,58 +56,61 @@ export const validateCommand = (program: Command): void => {
             await fs.access(filePath);
             const stats = await fs.stat(filePath);
             const size = stats.size;
-            
+
             if (size > 0) {
-              console.log(chalk.green(`✅ ${file} (${size} bytes)`));
+              Logger.success(`✅ ${file} (${size} bytes)`);
               fileCount++;
             } else {
-              console.log(chalk.yellow(`⚠️  ${file} (empty file)`));
+              Logger.warn(`⚠️  ${file} (empty file)`);
               isValid = false;
             }
           } catch {
-            console.log(chalk.red(`❌ ${file} (missing)`));
+            Logger.error(`❌ ${file} (missing)`);
             isValid = false;
           }
         }
 
         console.log('');
-        console.log(chalk.blue('📊 Validation Summary:'));
-        console.log(`  Files found: ${fileCount}/${requiredFiles.length + 1}`);
-        console.log(`  Status: ${isValid ? chalk.green('VALID') : chalk.red('INVALID')}`);
+        Logger.info('📊 Validation Summary:');
+        Logger.info(`  Files found: ${fileCount}/${requiredFiles.length + 1}`);
+        Logger.info(`  Status: ${isValid ? 'VALID' : 'INVALID'}`);
 
         if (isValid) {
           console.log('');
-          console.log(chalk.green('🎉 Memory bank setup is valid!'));
-          console.log(chalk.gray('Your project is ready for AI agent collaboration.'));
+          Logger.success('🎉 Memory bank setup is valid!');
+          Logger.info('Your project is ready for AI agent collaboration.');
         } else {
           console.log('');
-          console.log(chalk.yellow('⚠️  Memory bank setup needs attention:'));
-          console.log(chalk.gray('Run "memory-banks init" to set up a complete memory bank system.'));
+          Logger.warn('⚠️  Memory bank setup needs attention:');
+          Logger.info(
+            'Run "memory-banks init" to set up a complete memory bank system.'
+          );
         }
 
         if (options.verbose) {
           console.log('');
-          console.log(chalk.blue('📝 Additional Information:'));
-          
+          Logger.info('📝 Additional Information:');
+
           // Check for additional files
           try {
             const files = await fs.readdir(memoryBankPath);
-            const additionalFiles = files.filter(f => !requiredFiles.includes(f) && f.endsWith('.md'));
-            
+            const additionalFiles = files.filter(
+              f => !requiredFiles.includes(f) && f.endsWith('.md')
+            );
+
             if (additionalFiles.length > 0) {
-              console.log(chalk.gray('Additional memory bank files:'));
+              Logger.info('Additional memory bank files:');
               additionalFiles.forEach(file => {
-                console.log(chalk.gray(`  - ${file}`));
+                Logger.info(`  - ${file}`);
               });
             }
           } catch {
             // Directory doesn't exist, skip
           }
         }
-
       } catch (error) {
-        console.error(chalk.red('❌ Validation failed:'), error);
+        Logger.error('Validation failed:', error);
         process.exit(1);
       }
     });
-}; 
+};
