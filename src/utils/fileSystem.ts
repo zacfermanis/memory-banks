@@ -1352,4 +1352,22 @@ Enter choice (1-4): `;
       };
     }
   }
+
+  /**
+   * Generate minimal content for different file types
+   */
+  static generateMinimalContent(fileType?: string): string {
+    switch (fileType?.toLowerCase()) {
+      case 'json':
+        return '{}';
+      case 'yaml':
+      case 'yml':
+        return '# Minimal YAML file';
+      case 'md':
+      case 'markdown':
+        return '# Minimal Markdown file';
+      default:
+        return '# Minimal file';
+    }
+  }
 }

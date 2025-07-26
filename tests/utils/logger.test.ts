@@ -109,7 +109,7 @@ describe('Logger', () => {
 
       Logger.startTimer('test-timer');
       // Add a small delay to ensure non-zero duration
-      await new Promise(resolve => setTimeout(resolve, 1));
+      await new Promise(resolve => setTimeout(resolve, 10));
       const duration = Logger.endTimer('test-timer');
 
       expect(duration).toBeGreaterThan(0);
