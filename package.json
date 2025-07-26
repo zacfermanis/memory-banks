@@ -1,5 +1,5 @@
 {
-  "name": "memory-bank",
+  "name": "@zacfermanis/memory-bank",
   "version": "1.0.0",
   "description": "A CLI tool to initialize memory bank projects with AI-powered development documentation and cursor rules for TypeScript/React and Lua/Love2D development",
   "main": "dist/index.js",

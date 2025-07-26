@@ -40,6 +40,6 @@ jobs:
           echo "Build verification passed"
         
       - name: Publish to npm
-        run: npm publish --access public
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 
