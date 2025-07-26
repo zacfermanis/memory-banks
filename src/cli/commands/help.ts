@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Command } from 'commander';
 import { HelpSystem } from '../../utils/helpSystem';
 import { Logger } from '../../utils/logger';

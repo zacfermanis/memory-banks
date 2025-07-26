@@ -14,7 +14,6 @@
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
     "prepare": "npm run build",
-    
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -42,12 +41,10 @@
     "test:compatibility-reporting": "node -e \"console.log('Compatibility reporting:'); console.log('- Platform detection: Working'); console.log('- Feature availability: Checked'); console.log('- Performance metrics: Collected'); console.log('- Compatibility matrix: Generated'); console.log('✅ Compatibility reporting completed');\"",
     "test:platform-optimization": "node -e \"console.log('Platform optimization:'); console.log('- Windows optimizations: Applied'); console.log('- macOS optimizations: Applied'); console.log('- Linux optimizations: Applied'); console.log('- Universal compatibility: Achieved'); console.log('✅ Platform optimization completed');\"",
     "test:all-platforms": "npm run test:windows && npm run test:macos && npm run test:linux && npm run test:cross-platform-validation && echo '✅ All platform compatibility tests completed'",
-    
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "prettier --write src/**/*.ts",
     "format:check": "prettier --check src/**/*.ts",
-    
     "validate": "npm run lint && npm run test && npm run build",
     "validate:build": "npm run build && node -e \"console.log('✅ Build validation passed')\"",
     "validate:cli": "node dist/cli/index.js --version && node dist/cli/index.js --help",
@@ -63,18 +60,15 @@
     "validate:bundle-size": "npm run build && node -e \"const fs = require('fs'); const path = require('path'); function getDirSize(dir) { let size = 0; const files = fs.readdirSync(dir); files.forEach(file => { const filePath = path.join(dir, file); const stat = fs.statSync(filePath); if (stat.isDirectory()) { size += getDirSize(filePath); } else { size += stat.size; } }); return size; } const sizeKB = Math.round(getDirSize('dist') / 1024); console.log('Bundle size:', sizeKB + ' KB'); if (sizeKB > 500) { console.error('❌ Bundle size too large:', sizeKB + ' KB'); process.exit(1); } console.log('✅ Bundle size validation passed');\"",
     "validate:startup-time": "node -e \"const start = Date.now(); const originalLog = console.log; console.log = () => {}; const originalProcess = process.argv; process.argv = ['node', 'test']; try { require('./dist/cli/index.js'); } catch(e) {} process.argv = originalProcess; console.log = originalLog; const end = Date.now(); console.log('Startup time:', end - start + ' ms'); console.log('✅ Startup time validation passed');\"",
     "validate:memory-usage": "node -e \"const mem = process.memoryUsage(); console.log('Memory usage:', Math.round(mem.heapUsed / 1024 / 1024) + ' MB'); console.log('✅ Memory usage validation passed');\"",
-    
     "version:patch": "standard-version --release-as patch",
-    "version:minor": "standard-version --release-as minor", 
+    "version:minor": "standard-version --release-as minor",
     "version:major": "standard-version --release-as major",
     "version:prerelease": "standard-version --prerelease",
     "version:dry-run": "standard-version --dry-run",
     "version:validate": "npm run validate:full && npm run version:dry-run",
-    
     "changelog:generate": "standard-version --dry-run --skip.tag --skip.commit",
     "changelog:preview": "npm run changelog:generate && cat CHANGELOG.md",
     "changelog:validate": "npm run changelog:generate && node -e \"console.log('✅ Changelog validation passed')\"",
-    
     "git:status": "git status --porcelain",
     "git:check-clean": "npm run git:status | wc -l | xargs test 0 -eq",
     "git:commit": "git add . && git commit -m",
@@ -83,14 +77,12 @@
     "git:push-tags": "git push --follow-tags origin HEAD",
     "git:validate": "npm run git:status && echo '✅ Git status check completed'",
     "git:pre-version": "npm run git:validate && npm run validate:full",
-    
     "release:prepare": "npm run git:pre-version && npm run version:validate",
     "release:patch": "npm run release:prepare && npm run version:patch",
     "release:minor": "npm run release:prepare && npm run version:minor",
     "release:major": "npm run release:prepare && npm run version:major",
     "release:publish": "npm run release:patch && npm run git:push-tags && npm publish",
     "release:dry-run": "npm run release:prepare && npm run version:dry-run",
-    
     "publish:check": "npm run validate:full && npm run test:cross-platform",
     "publish:dry-run": "npm pack --dry-run",
     "publish:validate": "npm run publish:check && npm run publish:dry-run",
@@ -104,14 +96,12 @@
     "publish:check-auth": "npm whoami && echo '✅ Authentication valid'",
     "publish:preflight": "npm run publish:check-auth && npm run publish:validate",
     "prepublishOnly": "npm run validate",
-    
     "quality:package": "npm run validate:package && npm run validate:dependencies && npm run validate:files && npm run validate:metadata && echo '✅ Package validation completed'",
     "quality:security": "npm run security:all && echo '✅ Security validation completed'",
     "quality:documentation": "npm run validate:readme && npm run validate:api-docs && npm run validate:changelog && echo '✅ Documentation validation completed'",
     "quality:performance": "npm run validate:bundle-size && npm run validate:memory-usage && echo '✅ Performance validation completed'",
     "quality:all": "npm run quality:package && npm run quality:security && npm run quality:documentation && echo '✅ All quality control checks passed'",
     "quality:pre-publish": "npm run quality:all && npm run validate:full && echo '✅ Pre-publish quality control completed'",
-    
     "distribute:npm": "npm run publish:validate && npm publish && echo '✅ npm registry distribution completed'",
     "distribute:npm-validate": "npm run quality:pre-publish && npm run publish:validate && echo '✅ npm registry validation completed'",
     "distribute:npm-monitor": "npm view memory-banks && echo '✅ npm registry monitoring completed'",
@@ -128,7 +118,6 @@
     "distribute:all": "npm run distribute:npm && npm run distribute:github && npm run distribute:alternative && npm run distribute:test && echo '✅ All distribution channels completed'",
     "distribute:validate": "npm run quality:pre-publish && npm run distribute:test && echo '✅ Distribution validation completed'",
     "distribute:full": "npm run distribute:validate && npm run distribute:all && echo '✅ Full distribution workflow completed'",
-    
     "ci:test": "npm run test && npm run test:coverage && echo '✅ CI tests completed'",
     "ci:install": "npm ci && npm run build && echo '✅ CI installation completed'",
     "ci:package": "npm run build && npm pack --dry-run && echo '✅ CI package validation completed'",
@@ -136,21 +125,18 @@
     "ci:cross-platform": "npm run test:cross-platform && npm run test:npx-compatibility && echo '✅ CI cross-platform tests completed'",
     "ci:integration": "npm run ci:install && npm run ci:package && npm run ci:npx && echo '✅ CI integration tests completed'",
     "ci:full": "npm run ci:integration && npm run quality:all && npm run distribute:validate && echo '✅ Full CI pipeline completed'",
-    
     "cd:version": "npm run version:patch && echo '✅ CD version bump completed'",
     "cd:changelog": "npm run changelog:generate && echo '✅ CD changelog generation completed'",
     "cd:publish": "npm run publish:auto && echo '✅ CD publishing completed'",
     "cd:release": "npm run distribute:github && echo '✅ CD release creation completed'",
     "cd:validate": "npm run quality:pre-publish && npm run distribute:validate && echo '✅ CD validation completed'",
     "cd:full": "npm run cd:validate && npm run cd:version && npm run cd:changelog && npm run cd:publish && npm run cd:release && echo '✅ Full CD pipeline completed'",
-    
     "deploy:monitor": "npm view memory-banks 2>/dev/null || echo 'Package not yet published' && echo '✅ Deployment monitoring completed'",
     "deploy:validate": "npm run distribute:test && npm run distribute:download && echo '✅ Deployment validation completed'",
     "deploy:notify": "echo '🚀 Deployment successful!' && echo '📦 Package: memory-banks' && echo '📋 Version: $(npm run --silent version:current)' && echo '✅ Deployment notifications sent'",
     "deploy:analytics": "node -e \"console.log('Deployment Analytics:'); console.log('- Package downloads: Check npm trends'); console.log('- GitHub releases: Check releases page'); console.log('- Installation success: Monitor npx usage'); console.log('- User feedback: Monitor GitHub issues'); console.log('✅ Deployment analytics completed');\"",
     "deploy:status": "npm run deploy:monitor && npm run deploy:validate && npm run deploy:notify && npm run deploy:analytics && echo '✅ Deployment status check completed'",
     "deploy:full": "npm run cd:full && npm run deploy:status && echo '✅ Full deployment workflow completed'",
-    
     "optimize:build-incremental": "tsc --incremental && echo '✅ Incremental build completed'",
     "optimize:build-parallel": "node -e \"const { spawn } = require('child_process'); const processes = ['tsc', 'npm run lint', 'npm run test'].map(cmd => spawn(cmd, [], {stdio: 'inherit', shell: true})); Promise.all(processes.map(p => new Promise(resolve => p.on('close', resolve)))).then(() => console.log('✅ Parallel build completed'));\"",
     "optimize:build-cache": "npm run clean && npm run build && echo '✅ Build cache optimized'",
@@ -167,13 +153,11 @@
     "optimize:npx-full": "npm run optimize:npx-monitor && node -e \"console.log('npx performance summary:'); console.log('- Startup time: < 100ms'); console.log('- Memory usage: < 50MB'); console.log('- Execution time: Fast'); console.log('- Cache efficiency: High'); console.log('✅ Full npx performance optimization completed');\"",
     "optimize:all": "npm run optimize:build-full && npm run optimize:size-full && npm run optimize:npx-full && echo '✅ All performance optimizations completed'",
     "optimize:pre-publish": "npm run optimize:all && npm run quality:all && echo '✅ Pre-publish optimization completed'",
-    
     "performance:build-test": "node -e \"const start = Date.now(); require('child_process').execSync('npm run build', {stdio: 'inherit'}); const end = Date.now(); console.log('Build performance test:'); console.log('- Build time:', end - start + ' ms'); console.log('- Target: < 5000ms'); console.log('- Status:', end - start < 5000 ? 'PASS' : 'FAIL'); console.log('✅ Build performance test completed');\"",
     "performance:size-test": "npm run build && node -e \"const fs = require('fs'); const path = require('path'); function getDirSize(dir) { let size = 0; const files = fs.readdirSync(dir); files.forEach(file => { const filePath = path.join(dir, file); const stat = fs.statSync(filePath); if (stat.isDirectory()) { size += getDirSize(filePath); } else { size += stat.size; } }); return size; } const sizeKB = Math.round(getDirSize('dist') / 1024); console.log('Package size test:'); console.log('- Package size:', sizeKB + ' KB'); console.log('- Target: < 500 KB'); console.log('- Status:', sizeKB < 500 ? 'PASS' : 'FAIL'); console.log('✅ Package size test completed');\"",
     "performance:npx-test": "node -e \"console.log('npx performance test:'); console.log('- Startup time: < 100ms (estimated)'); console.log('- Target: < 100ms'); console.log('- Status: PASS'); console.log('✅ npx performance test completed');\"",
     "performance:benchmark": "npm run performance:build-test && npm run performance:size-test && npm run performance:npx-test && echo '✅ Performance benchmarking completed'",
     "performance:full": "npm run performance:benchmark && node -e \"console.log('Performance summary:'); console.log('- Build performance: Optimized'); console.log('- Package size: Minimal'); console.log('- npx startup: Fast'); console.log('- Overall performance: Excellent'); console.log('✅ Full performance testing completed');\"",
-    
     "security:package-sign": "npm run build && node -e \"console.log('Package signing:'); console.log('- npm package integrity: Enabled'); console.log('- SHA512 checksums: Generated'); console.log('- Package signing: Configured'); console.log('- Integrity verification: Active'); console.log('✅ Package signing completed');\"",
     "security:integrity-verify": "npm run build && node -e \"const fs = require('fs'); const crypto = require('crypto'); const files = fs.readdirSync('dist').filter(f => f.endsWith('.js')); const hashes = files.map(file => { const content = fs.readFileSync('dist/' + file); return crypto.createHash('sha512').update(content).digest('hex'); }); console.log('Integrity verification:'); console.log('- Files verified:', files.length); console.log('- SHA512 hashes:', hashes.length); console.log('- Integrity check: PASS'); console.log('✅ Integrity verification completed');\"",
     "security:scan": "npm audit --audit-level=moderate && echo '✅ Security scanning completed'",
@@ -228,8 +212,8 @@
     "@types/inquirer": "^9.0.8",
     "@types/jest": "^29.5.8",
     "@types/node": "^20.8.10",
-    "@typescript-eslint/eslint-plugin": "^6.9.1",
-    "@typescript-eslint/parser": "^6.9.1",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.53.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.1",

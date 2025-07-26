@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Command } from 'commander';
 import { promises as fs } from 'fs';
 import path from 'path';

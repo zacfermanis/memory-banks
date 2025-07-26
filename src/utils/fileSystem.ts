@@ -71,6 +71,7 @@ export interface RollbackStep {
   metadata: FileMetadata;
 }
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export enum FileSystemErrorType {
   PERMISSION_DENIED = 'PERMISSION_DENIED',
   FILE_NOT_FOUND = 'FILE_NOT_FOUND',
@@ -93,6 +94,7 @@ export enum ErrorSeverity {
   HIGH = 'HIGH',
   CRITICAL = 'CRITICAL',
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 export interface FileSystemError {
   type: FileSystemErrorType;
@@ -585,7 +587,7 @@ Enter choice (1-4): `;
   /**
    * Get disk space information
    */
-  static async getDiskSpace(dirPath: string): Promise<{
+  static async getDiskSpace(_dirPath: string): Promise<{
     available: number;
     total: number;
     used: number;
@@ -593,20 +595,16 @@ Enter choice (1-4): `;
     warningThreshold: number;
     criticalThreshold: number;
   }> {
-    try {
-      // This is a simplified implementation
-      // In a real implementation, you would use platform-specific APIs
-      return {
-        available: 1024 * 1024 * 1024, // 1GB
-        total: 1024 * 1024 * 1024 * 100, // 100GB
-        used: 1024 * 1024 * 1024 * 99, // 99GB
-        sufficient: true,
-        warningThreshold: 1024 * 1024 * 1024 * 10, // 10GB
-        criticalThreshold: 1024 * 1024 * 1024 * 1, // 1GB
-      };
-    } catch (error) {
-      throw new Error(`Failed to get disk space for ${dirPath}: ${error}`);
-    }
+    // This is a simplified implementation
+    // In a real implementation, you would use platform-specific APIs
+    return {
+      available: 1024 * 1024 * 1024, // 1GB
+      total: 1024 * 1024 * 1024 * 100, // 100GB
+      used: 1024 * 1024 * 1024 * 99, // 99GB
+      sufficient: true,
+      warningThreshold: 1024 * 1024 * 1024 * 10, // 10GB
+      criticalThreshold: 1024 * 1024 * 1024 * 1, // 1GB
+    };
   }
 
   /**
@@ -1252,7 +1250,7 @@ Enter choice (1-4): `;
       default:
         return {
           normalizePath: (path: string) => path,
-          getPermissions: async () => ({
+          getPermissions: async (_path: string) => ({
             readable: true,
             writable: true,
             executable: false,
@@ -1260,8 +1258,10 @@ Enter choice (1-4): `;
             group: 'unknown',
             permissions: '644',
           }),
-          getFileSystemFeatures: async () => ({ maxPathLength: 1024 }),
-          optimize: async () => ({
+          getFileSystemFeatures: async (_path: string) => ({
+            maxPathLength: 1024,
+          }),
+          optimize: async (_path: string) => ({
             optimized: false,
             optimizations: [],
             warnings: [],

@@ -8,7 +8,7 @@ export interface ValidationResult {
 
 export interface ValidationRule {
   name: string;
-  validate: (value: any) => boolean;
+  validate: (_value: any) => boolean;
   message: string;
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import chalk from 'chalk';
 
 export enum LogLevel {
@@ -76,8 +77,10 @@ export class Logger {
   static debug(message: string, ...args: any[]): void {
     if (this.currentLevel >= LogLevel.DEBUG) {
       if (args.length > 0) {
+        // eslint-disable-next-line no-console
         console.log(`${chalk.gray('🐛 DEBUG:')} ${message}`, ...args);
       } else {
+        // eslint-disable-next-line no-console
         console.log(`${chalk.gray('🐛 DEBUG:')} ${message}`);
       }
     }
@@ -89,8 +92,10 @@ export class Logger {
   static trace(message: string, ...args: any[]): void {
     if (this.currentLevel >= LogLevel.TRACE) {
       if (args.length > 0) {
+        // eslint-disable-next-line no-console
         console.log(`${chalk.gray('🔍 TRACE:')} ${message}`, ...args);
       } else {
+        // eslint-disable-next-line no-console
         console.log(`${chalk.gray('🔍 TRACE:')} ${message}`);
       }
     }

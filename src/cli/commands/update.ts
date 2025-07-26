@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { Command } from 'commander';
 import { TemplateRegistry } from '../../services/templateRegistry';
 import { TemplateRenderer } from '../../services/templateRenderer';

@@ -1,5 +1,7 @@
+/* eslint-disable no-console */
 import chalk from 'chalk';
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export enum ErrorCode {
   // Validation errors (1000-1999)
   VALIDATION_ERROR = 1000,
@@ -47,6 +49,7 @@ export enum ErrorCode {
   // Unknown errors (9000-9999)
   UNKNOWN_ERROR = 9000,
 }
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 export enum ErrorSeverity {
   LOW = 'low',

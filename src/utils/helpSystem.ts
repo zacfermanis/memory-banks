@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import chalk from 'chalk';
 import { Command } from 'commander';
 
@@ -493,7 +494,7 @@ memory-banks --verbose <command>
   /**
    * Get color for category
    */
-  private static getCategoryColor(category: string): (text: string) => string {
+  private static getCategoryColor(category: string): (_text: string) => string {
     switch (category) {
       case 'basic':
         return chalk.green;

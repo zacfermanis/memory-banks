@@ -35,6 +35,7 @@ export class TemplateRegistry {
 
             templates.push(config);
           } catch (error) {
+            // eslint-disable-next-line no-console
             console.warn(`Warning: Could not load template ${dir}: ${error}`);
           }
         }

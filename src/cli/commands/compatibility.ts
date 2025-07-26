@@ -9,19 +9,26 @@ export function compatibilityCommand(program: Command): void {
   program
     .command('compatibility')
     .description('Test cross-platform compatibility')
-    .option('-p, --platform <platform>', 'Test specific platform (windows, macos, linux, all)')
+    .option(
+      '-p, --platform <platform>',
+      'Test specific platform (windows, macos, linux, all)'
+    )
     .option('-v, --verbose', 'Enable verbose output')
     .option('-r, --report', 'Generate detailed compatibility report')
-    .action(async (options) => {
+    .action(async options => {
       try {
         Logger.info('Starting cross-platform compatibility testing...');
-        
+
         const platform = options.platform?.toLowerCase() || 'all';
         const verbose = options.verbose || false;
         const generateReport = options.report || false;
 
         if (verbose) {
-          Logger.debug('Compatibility test options:', { platform, verbose, generateReport });
+          Logger.debug('Compatibility test options:', {
+            platform,
+            verbose,
+            generateReport,
+          });
         }
 
         let result;
@@ -29,88 +36,171 @@ export function compatibilityCommand(program: Command): void {
         switch (platform) {
           case 'windows':
             Logger.info('Testing Windows compatibility...');
-            result = await CrossPlatformCompatibility.testWindowsCompatibility();
+            result =
+              await CrossPlatformCompatibility.testWindowsCompatibility();
             break;
-          
+
           case 'macos':
             Logger.info('Testing macOS compatibility...');
             result = await CrossPlatformCompatibility.testMacOSCompatibility();
             break;
-          
+
           case 'linux':
             Logger.info('Testing Linux compatibility...');
             result = await CrossPlatformCompatibility.testLinuxCompatibility();
             break;
-          
+
           case 'all':
-          default:
+          default: {
             Logger.info('Testing all platform compatibility...');
             const report = await CrossPlatformCompatibility.testAllPlatforms();
-            
+
             if (generateReport) {
-              console.log(chalk.blue('\n📊 Cross-Platform Compatibility Report'));
+              // eslint-disable-next-line no-console
+              console.log(
+                chalk.blue('\n📊 Cross-Platform Compatibility Report')
+              );
+              // eslint-disable-next-line no-console
               console.log(chalk.gray('='.repeat(50)));
-              console.log(chalk.cyan(`Timestamp: ${report.timestamp.toISOString()}`));
-              console.log(chalk.cyan(`Overall Compatibility: ${report.overall.compatible ? chalk.green('PASS') : chalk.red('FAIL')}`));
-              console.log(chalk.cyan(`Total Tests: ${report.overall.totalTests}`));
-              console.log(chalk.cyan(`Passed: ${chalk.green(report.overall.totalPassed)}`));
-              console.log(chalk.cyan(`Failed: ${chalk.red(report.overall.totalFailed)}`));
-              console.log(chalk.cyan(`Critical Failures: ${chalk.red(report.overall.criticalFailures)}`));
-              
+              // eslint-disable-next-line no-console
+              console.log(
+                chalk.cyan(`Timestamp: ${report.timestamp.toISOString()}`)
+              );
+              // eslint-disable-next-line no-console
+              console.log(
+                chalk.cyan(
+                  `Overall Compatibility: ${report.overall.compatible ? chalk.green('PASS') : chalk.red('FAIL')}`
+                )
+              );
+              // eslint-disable-next-line no-console
+              console.log(
+                chalk.cyan(`Total Tests: ${report.overall.totalTests}`)
+              );
+              // eslint-disable-next-line no-console
+              console.log(
+                chalk.cyan(`Passed: ${chalk.green(report.overall.totalPassed)}`)
+              );
+              // eslint-disable-next-line no-console
+              console.log(
+                chalk.cyan(`Failed: ${chalk.red(report.overall.totalFailed)}`)
+              );
+              // eslint-disable-next-line no-console
+              console.log(
+                chalk.cyan(
+                  `Critical Failures: ${chalk.red(report.overall.criticalFailures)}`
+                )
+              );
+
+              // eslint-disable-next-line no-console
               console.log(chalk.blue('\n📋 Platform Results:'));
-              Object.entries(report.platforms).forEach(([platformName, platformResult]) => {
-                const status = platformResult.summary.criticalFailed === 0 ? chalk.green('✅') : chalk.red('❌');
-                console.log(`${status} ${chalk.cyan(platformName.toUpperCase())}: ${platformResult.summary.passed}/${platformResult.summary.total} tests passed`);
-                
-                if (verbose) {
-                  Object.entries(platformResult.tests).forEach(([testName, test]) => {
-                    const testStatus = test.passed ? chalk.green('✓') : chalk.red('✗');
-                    console.log(`  ${testStatus} ${testName}: ${test.details} (${test.duration}ms)`);
-                    if (test.error) {
-                      console.log(`    ${chalk.red('Error:')} ${test.error}`);
-                    }
-                  });
+              Object.entries(report.platforms).forEach(
+                ([platformName, platformResult]) => {
+                  const status =
+                    platformResult.summary.criticalFailed === 0
+                      ? chalk.green('✅')
+                      : chalk.red('❌');
+                  // eslint-disable-next-line no-console
+                  console.log(
+                    `${status} ${chalk.cyan(platformName.toUpperCase())}: ${platformResult.summary.passed}/${platformResult.summary.total} tests passed`
+                  );
+
+                  if (verbose) {
+                    Object.entries(platformResult.tests).forEach(
+                      ([testName, test]) => {
+                        const testStatus = test.passed
+                          ? chalk.green('✓')
+                          : chalk.red('✗');
+                        // eslint-disable-next-line no-console
+                        console.log(
+                          `  ${testStatus} ${testName}: ${test.details} (${test.duration}ms)`
+                        );
+                        if (test.error) {
+                          // eslint-disable-next-line no-console
+                          console.log(
+                            `    ${chalk.red('Error:')} ${test.error}`
+                          );
+                        }
+                      }
+                    );
+                  }
                 }
-              });
-              
+              );
+
               if (report.recommendations.length > 0) {
+                // eslint-disable-next-line no-console
                 console.log(chalk.blue('\n💡 Recommendations:'));
                 report.recommendations.forEach((rec, index) => {
+                  // eslint-disable-next-line no-console
                   console.log(`${index + 1}. ${rec}`);
                 });
               }
             } else {
               // Simple summary
-              const status = report.overall.compatible ? chalk.green('PASS') : chalk.red('FAIL');
-              console.log(chalk.blue(`\nCross-Platform Compatibility: ${status}`));
-              console.log(chalk.gray(`Tests: ${report.overall.totalPassed}/${report.overall.totalTests} passed`));
+              const status = report.overall.compatible
+                ? chalk.green('PASS')
+                : chalk.red('FAIL');
+              // eslint-disable-next-line no-console
+              console.log(
+                chalk.blue(`\nCross-Platform Compatibility: ${status}`)
+              );
+              // eslint-disable-next-line no-console
+              console.log(
+                chalk.gray(
+                  `Tests: ${report.overall.totalPassed}/${report.overall.totalTests} passed`
+                )
+              );
               if (report.overall.criticalFailures > 0) {
-                console.log(chalk.red(`Critical failures: ${report.overall.criticalFailures}`));
+                // eslint-disable-next-line no-console
+                console.log(
+                  chalk.red(
+                    `Critical failures: ${report.overall.criticalFailures}`
+                  )
+                );
               }
             }
-            
+
             return;
+          }
         }
 
         if (result) {
           // Single platform result
-          const status = result.summary.criticalFailed === 0 ? chalk.green('PASS') : chalk.red('FAIL');
-          console.log(chalk.blue(`\n${platform.toUpperCase()} Compatibility: ${status}`));
-          console.log(chalk.gray(`Tests: ${result.summary.passed}/${result.summary.total} passed`));
-          
+          const status =
+            result.summary.criticalFailed === 0
+              ? chalk.green('PASS')
+              : chalk.red('FAIL');
+          // eslint-disable-next-line no-console
+          console.log(
+            chalk.blue(`\n${platform.toUpperCase()} Compatibility: ${status}`)
+          );
+          // eslint-disable-next-line no-console
+          console.log(
+            chalk.gray(
+              `Tests: ${result.summary.passed}/${result.summary.total} passed`
+            )
+          );
+
           if (verbose) {
             Object.entries(result.tests).forEach(([testName, test]) => {
-              const testStatus = test.passed ? chalk.green('✓') : chalk.red('✗');
-              console.log(`  ${testStatus} ${testName}: ${test.details} (${test.duration}ms)`);
+              const testStatus = test.passed
+                ? chalk.green('✓')
+                : chalk.red('✗');
+              // eslint-disable-next-line no-console
+              console.log(
+                `  ${testStatus} ${testName}: ${test.details} (${test.duration}ms)`
+              );
               if (test.error) {
+                // eslint-disable-next-line no-console
                 console.log(`    ${chalk.red('Error:')} ${test.error}`);
               }
             });
           }
-          
+
           if (result.recommendations.length > 0) {
+            // eslint-disable-next-line no-console
             console.log(chalk.blue('\n💡 Recommendations:'));
             result.recommendations.forEach((rec, index) => {
+              // eslint-disable-next-line no-console
               console.log(`${index + 1}. ${rec}`);
             });
           }
@@ -119,8 +209,9 @@ export function compatibilityCommand(program: Command): void {
         Logger.info('Cross-platform compatibility testing completed');
       } catch (error) {
         Logger.error('Error during compatibility testing:', error);
+        // eslint-disable-next-line no-console
         console.error(chalk.red('❌ Compatibility testing failed:'), error);
         process.exit(1);
       }
     });
-} 
+}
