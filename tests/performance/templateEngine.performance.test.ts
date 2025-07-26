@@ -453,7 +453,7 @@ Please log in to access your dashboard.
           
           // Throughput should not decrease significantly with increased concurrency
           // Use a lower threshold in CI environments to account for resource constraints
-          const minRatio = process.env.CI ? 0.3 : 0.5;
+          const minRatio = process.env['CI'] ? 0.3 : 0.5;
           expect(throughputRatio).toBeGreaterThan(minRatio);
         }
       }
@@ -587,7 +587,7 @@ Please log in to access your dashboard.
       expect(metrics.formatTime).toBeLessThan(50);
       expect(metrics.cacheHitRate).toBe(1);
       // Use a lower throughput threshold in CI environments
-      const minThroughput = process.env.CI ? 5 : 10; // At least 5 ops/second in CI, 10 in local
+      const minThroughput = process.env['CI'] ? 5 : 10; // At least 5 ops/second in CI, 10 in local
       expect(metrics.throughput).toBeGreaterThan(minThroughput);
       expect(metrics.memoryUsage).toBeGreaterThan(0);
     });
