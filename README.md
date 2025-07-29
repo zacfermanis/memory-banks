@@ -255,9 +255,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built with ❤️ for the AI development community
-- Inspired by the need for better AI-human collaboration tools
-- Special thanks to the Cursor IDE team for their innovative approach to AI-assisted development
+This project was primarily inspired by the innovative system prompts and AI collaboration approaches developed by:
+
+- **Cline** - Whose sophisticated system prompt engineering and AI agent memory management techniques provided the foundational concepts for the Memory Bank system
+- **AWS Kiro** - Whose advanced AI development workflows and documentation strategies influenced the SPEC-driven development process and project structure
+
+Additional inspiration came from:
+- The Cursor IDE team for their innovative approach to AI-assisted development
+- The broader AI development community for pushing the boundaries of human-AI collaboration
+
+Built with ❤️ for the AI development community, this tool aims to bridge the gap between AI capabilities and human development workflows.
 
 ---
 
