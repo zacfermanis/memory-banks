@@ -98,35 +98,36 @@ Memory Bank for Agents creates the foundation structure. You can then expand the
 
 ## 🔧 Development Setup
 
-### Husky Git Hooks
+### Husky Pre-commit Hook
 
-This project uses Husky to automatically manage version bumping and quality checks:
+This project uses Husky to ensure code quality on every commit:
 
-- **🧪 Pre-commit Quality Checks**: Tests and builds run before commit to ensure code quality
-- **📦 Post-commit Version Bumping**: Patch version is automatically incremented after successful commit
-- **🔨 Build Verification**: TypeScript compilation is verified on every commit
+- **🧪 Quality Checks**: Tests and builds run before commit to ensure code quality
+- **🔨 Build Verification**: TypeScript compilation is verified before commit
+- **📦 Manual Version Control**: Version bumping is done manually when needed
 
-#### Manual Version Bumping
+#### Version Bumping
 
-If you need to manually bump the version:
+To bump the version manually:
 
 ```bash
 npm run bump-version
 ```
 
-This will increment the patch version (e.g., 2.0.9 → 2.0.10).
+This will increment the patch version (e.g., 2.0.12 → 2.0.13).
 
-#### Hook Details
+#### Pre-commit Hook Details
 
-**Pre-commit Hook** (runs before commit):
+The pre-commit hook performs the following actions:
 1. Runs all Jest tests to ensure code quality
 2. Builds the TypeScript project to catch compilation errors
 3. Only allows commit if all checks pass
 
-**Post-commit Hook** (runs after successful commit):
-1. Bumps the package version automatically for the next commit
-2. Runs tests again to ensure version bump didn't break anything
-3. Rebuilds the project to ensure everything still compiles
+#### When to Bump Versions
+
+- **Patch version** (2.0.12 → 2.0.13): Bug fixes and minor improvements
+- **Minor version** (2.0.12 → 2.1.0): New features (manual edit of package.json)
+- **Major version** (2.0.12 → 3.0.0): Breaking changes (manual edit of package.json)
 
 ### 🧠 Creating Memory Bank Files
 
