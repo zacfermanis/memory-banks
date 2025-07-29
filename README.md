@@ -96,6 +96,34 @@ your-project/
 
 Memory Bank for Agents creates the foundation structure. You can then expand the Memory Bank system by creating additional documentation files as needed.
 
+## 🔧 Development Setup
+
+### Husky Pre-commit Hooks
+
+This project uses Husky to automatically manage version bumping and quality checks on every commit:
+
+- **📦 Automatic Version Bumping**: Patch version is automatically incremented on each commit
+- **🧪 Test Execution**: All tests are run before commit to ensure code quality
+- **🔨 Build Verification**: TypeScript compilation is verified before commit
+
+#### Manual Version Bumping
+
+If you need to manually bump the version:
+
+```bash
+npm run bump-version
+```
+
+This will increment the patch version (e.g., 2.0.6 → 2.0.7).
+
+#### Pre-commit Hook Details
+
+The pre-commit hook performs the following actions:
+1. Bumps the package version automatically
+2. Runs all Jest tests
+3. Builds the TypeScript project
+4. Only allows commit if all checks pass
+
 ### 🧠 Creating Memory Bank Files
 
 After installation, you can create the complete Memory Bank documentation system by running this command in your AI agent:
