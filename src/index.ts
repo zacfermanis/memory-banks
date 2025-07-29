@@ -14,13 +14,15 @@ const MEMORY_BANK_TYPES: Record<string, MemoryBankType> = {
   lua: {
     name: 'Lua',
     cursorRulesPath: path.join(
-      process.cwd(),
+      __dirname,
+      '..',
       'src',
       'cursorrules',
       '.cursorrules'
     ),
     developmentGuidePath: path.join(
-      process.cwd(),
+      __dirname,
+      '..',
       'src',
       'developmentGuides',
       'Lua',
@@ -30,13 +32,15 @@ const MEMORY_BANK_TYPES: Record<string, MemoryBankType> = {
   web: {
     name: 'Web',
     cursorRulesPath: path.join(
-      process.cwd(),
+      __dirname,
+      '..',
       'src',
       'cursorrules',
       '.cursorrules'
     ),
     developmentGuidePath: path.join(
-      process.cwd(),
+      __dirname,
+      '..',
       'src',
       'developmentGuides',
       'Web',
@@ -46,13 +50,15 @@ const MEMORY_BANK_TYPES: Record<string, MemoryBankType> = {
   java: {
     name: 'Java',
     cursorRulesPath: path.join(
-      process.cwd(),
+      __dirname,
+      '..',
       'src',
       'cursorrules',
       '.cursorrules'
     ),
     developmentGuidePath: path.join(
-      process.cwd(),
+      __dirname,
+      '..',
       'src',
       'developmentGuides',
       'Java',

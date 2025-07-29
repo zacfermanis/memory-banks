@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔧 Running pre-commit hooks..."
+
+# Bump version
+echo "📦 Bumping version..."
+node scripts/bump-version.js
+
+# Run tests
+echo "🧪 Running tests..."
+npm test
+
+# Build project
+echo "🔨 Building project..."
+npm run build
+
+echo "✅ Pre-commit hooks completed successfully!"
