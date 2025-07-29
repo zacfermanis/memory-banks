@@ -1,15 +1,11 @@
 echo "🔧 Running pre-commit hooks..."
 
-# Bump version
-echo "📦 Bumping version..."
-node scripts/bump-version.js
-
-# Run tests
+# Run tests to ensure code quality
 echo "🧪 Running tests..."
 npm test
 
-# Build project
+# Build project to ensure compilation works
 echo "🔨 Building project..."
 npm run build
 
-echo "✅ Pre-commit hooks completed successfully!"
+echo "✅ Pre-commit hooks completed successfully!" 

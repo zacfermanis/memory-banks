@@ -1,0 +1,16 @@
+echo "🔧 Running post-commit hooks..."
+
+# Bump version for next commit
+echo "📦 Bumping version for next commit..."
+node scripts/bump-version.js
+
+# Run tests to ensure everything still works
+echo "🧪 Running tests..."
+npm test
+
+# Build project to ensure compilation still works
+echo "🔨 Building project..."
+npm run build
+
+echo "✅ Post-commit hooks completed successfully!"
+echo "📝 Version bumped and ready for next commit"
