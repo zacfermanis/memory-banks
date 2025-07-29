@@ -98,13 +98,13 @@ Memory Bank for Agents creates the foundation structure. You can then expand the
 
 ## 🔧 Development Setup
 
-### Husky Pre-commit Hooks
+### Husky Git Hooks
 
-This project uses Husky to automatically manage version bumping and quality checks on every commit:
+This project uses Husky to automatically manage version bumping and quality checks:
 
-- **📦 Automatic Version Bumping**: Patch version is automatically incremented on each commit
-- **🧪 Test Execution**: All tests are run before commit to ensure code quality
-- **🔨 Build Verification**: TypeScript compilation is verified before commit
+- **🧪 Pre-commit Quality Checks**: Tests and builds run before commit to ensure code quality
+- **📦 Post-commit Version Bumping**: Patch version is automatically incremented after successful commit
+- **🔨 Build Verification**: TypeScript compilation is verified on every commit
 
 #### Manual Version Bumping
 
@@ -114,15 +114,19 @@ If you need to manually bump the version:
 npm run bump-version
 ```
 
-This will increment the patch version (e.g., 2.0.6 → 2.0.7).
+This will increment the patch version (e.g., 2.0.9 → 2.0.10).
 
-#### Pre-commit Hook Details
+#### Hook Details
 
-The pre-commit hook performs the following actions:
-1. Bumps the package version automatically
-2. Runs all Jest tests
-3. Builds the TypeScript project
-4. Only allows commit if all checks pass
+**Pre-commit Hook** (runs before commit):
+1. Runs all Jest tests to ensure code quality
+2. Builds the TypeScript project to catch compilation errors
+3. Only allows commit if all checks pass
+
+**Post-commit Hook** (runs after successful commit):
+1. Bumps the package version automatically for the next commit
+2. Runs tests again to ensure version bump didn't break anything
+3. Rebuilds the project to ensure everything still compiles
 
 ### 🧠 Creating Memory Bank Files
 
@@ -299,3 +303,4 @@ Built with ❤️ for the AI development community, this tool aims to bridge the
 <div align="center">
   <strong>Made with ❤️ by <a href="https://github.com/zacfermanis">Zac Fermanis</a></strong>
 </div>
+# Test comment
