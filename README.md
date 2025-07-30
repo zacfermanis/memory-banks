@@ -18,6 +18,7 @@ Memory Bank for Agents is a modern command-line interface that initializes AI-re
 - **📚 Memory Management**: Structured documentation system for project knowledge retention
 - **⚡ Cursor Integration**: Custom `.cursorrules` for enhanced IDE experience
 - **🛠️ Multi-Platform Support**: TypeScript/React/Next.js, Lua/Love2D, and Java/Spring Boot development
+- **🔧 Custom Development Guides**: Extend with your own proprietary development practices
 - **📋 SPEC-Driven Development**: Systematic feature development workflow
 - **🔧 Zero-Configuration**: Works out of the box with sensible defaults
 
@@ -39,11 +40,17 @@ npx init-memory-bank
 
 ### Supported Development Environments
 
-Memory Bank for Agents supports three main development environments:
+Memory Bank for Agents supports built-in and custom development environments:
 
+#### Built-in Environments
 - **🌐 Web Development** - TypeScript, React, Next.js, and modern web technologies
 - **🎮 Lua Development** - Lua programming language and Love2D game framework
 - **☕ Java Development** - Java programming language and Spring Boot framework
+
+#### Custom Development Guides
+- **🔧 Custom Guides** - Your own proprietary development practices and company-specific guidelines
+- **🏢 Company Standards** - Internal coding standards, architecture patterns, and best practices
+- **🎯 Team Workflows** - Custom development workflows and team-specific processes
 
 Each environment comes with:
 - Customized development guidelines and best practices
@@ -76,10 +83,19 @@ Memory Bank for Agents will guide you through an interactive setup process:
 🚀 Memory Bank Initializer
 ==========================
 
+📝 Available development guides:
+   1. 📦 Lua - For Lua/Love2D game development
+   2. 📦 Web - For TypeScript/React/Next.js development
+   3. 📦 Java - For Java/Spring Boot development
+   4. 🔧 Company React (Custom) - Internal React standards
+   5. 🔧 Microservices (Custom) - Microservice architecture patterns
+
 ? What type of memory bank would you like to install?
   ❯ Lua - For Lua/Love2D game development
     Web - For TypeScript/React/Next.js development
     Java - For Java/Spring Boot development
+    Company React (Custom) - Internal React standards
+    Microservices (Custom) - Microservice architecture patterns
 ```
 
 ## 📁 Project Structure
@@ -89,12 +105,12 @@ After initialization, your project will have the following structure:
 ```
 your-project/
 ├── .memory-bank/           # AI memory and documentation system
-│   └── developmentGuide.md # Development guidelines and best practices
-├── .specs/                 # Feature specifications and requirements
-└── .cursorrules           # IDE configuration for AI collaboration
+│   └── developmentGuide.md # Development guidelines and best practices (copied from selected guide)
+├── .specs/                 # Feature specifications and requirements (empty directory)
+└── .cursorrules           # IDE configuration for AI collaboration (copied from selected guide if available)
 ```
 
-Memory Bank for Agents creates the foundation structure. You can then expand the Memory Bank system by creating additional documentation files as needed.
+Memory Bank for Agents creates the foundation structure by copying the selected development guide's files. You can then expand the Memory Bank system by creating additional documentation files as needed.
 
 ## 🔧 Development Setup
 
@@ -134,6 +150,7 @@ The SPEC process will guide you through:
 
 This ensures systematic, well-documented feature development that integrates seamlessly with your Memory Bank system.
 
+**Example Memory Bank Structure** (simulates an initialized repo with 1 feature):
 ```
 your-project/
 ├── .memory-bank/           # AI memory and documentation system
@@ -170,6 +187,88 @@ The Memory Bank system ensures:
 - **Knowledge Retention**: Important decisions and patterns are preserved
 - **Efficient Onboarding**: New team members can quickly understand project state
 - **Quality Assurance**: Systematic documentation prevents knowledge loss
+
+## 🔧 Custom Development Guides
+
+Memory Bank for Agents supports custom development guides, allowing you to extend the tool with your own proprietary development practices, company standards, and team-specific workflows.
+
+### Setting Up Custom Guides
+
+1. **Configure Custom Guides:**
+   ```bash
+   npx memory-bank-configure
+   ```
+
+2. **Set Custom Guides Folder:**
+   The configuration tool will prompt you to specify a folder where your custom guides are stored.
+
+3. **Create Custom Guide Structure:**
+   ```
+   ~/custom-dev-guides/
+   ├── company-react/
+   │   ├── developmentGuide.md
+   │   └── .cursorrules (optional)
+   ├── microservices/
+   │   ├── developmentGuide.md
+   │   └── .cursorrules (optional)
+   └── legacy-java/
+       ├── developmentGuide.md
+       └── .cursorrules (optional)
+   ```
+
+### Custom Guide File Structure
+
+Each custom guide folder must contain:
+
+- **`developmentGuide.md`** (required) - Your development guidelines and best practices
+- **`.cursorrules`** (optional) - Custom cursor rules for your development environment
+
+### Example Custom Guide
+
+**`~/custom-dev-guides/company-react/developmentGuide.md`:**
+```markdown
+# Company React Development Guide
+
+## Overview
+This guide contains our company's React development standards and best practices.
+
+## Coding Standards
+- Use functional components with hooks
+- Follow our naming conventions
+- Implement our testing patterns
+
+## Architecture Patterns
+- Component composition over inheritance
+- Custom hooks for business logic
+- Context for state management
+
+## Best Practices
+- Write self-documenting code
+- Use TypeScript for all components
+- Follow our Git workflow
+```
+
+### Managing Custom Guides
+
+Use the configuration command to manage your custom guides:
+
+```bash
+npx memory-bank-configure
+```
+
+**Available Options:**
+- Set custom guides folder location
+- Manage menu item names and organization
+- View current configuration
+- Reset to default settings
+
+### Custom Guide Benefits
+
+- **🏢 Company Standards**: Maintain consistent development practices across teams
+- **🎯 Team Workflows**: Share team-specific processes and conventions
+- **📚 Knowledge Sharing**: Preserve institutional knowledge and best practices
+- **🔧 Tool Integration**: Seamlessly integrate with existing development tools
+- **📈 Scalability**: Easily add new guides as your organization grows
 
 ## 🔧 Development
 
