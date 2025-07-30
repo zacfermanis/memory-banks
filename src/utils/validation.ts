@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { ValidationResult } from '../config/types';
-import { CustomGuideConfig } from '../config/types';
+import { ValidationResult, CustomGuideConfig } from '../config/types';
 
 /**
  * Validate a file path for security and correctness
@@ -67,7 +66,10 @@ export function validateGuideStructure(guidePath: string): ValidationResult {
   } catch (error) {
     return {
       isValid: false,
-      error: error instanceof Error ? error.message : 'Unknown error during validation',
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Unknown error during validation',
     };
   }
 }
@@ -75,7 +77,9 @@ export function validateGuideStructure(guidePath: string): ValidationResult {
 /**
  * Validate a custom guide configuration
  */
-export function validateConfiguration(config: CustomGuideConfig): ValidationResult {
+export function validateConfiguration(
+  config: CustomGuideConfig
+): ValidationResult {
   try {
     // Validate version
     if (config.version !== '1.0.0') {
@@ -133,7 +137,10 @@ export function validateConfiguration(config: CustomGuideConfig): ValidationResu
   } catch (error) {
     return {
       isValid: false,
-      error: error instanceof Error ? error.message : 'Unknown error during validation',
+      error:
+        error instanceof Error
+          ? error.message
+          : 'Unknown error during validation',
     };
   }
-} 
+}

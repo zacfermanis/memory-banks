@@ -96,23 +96,27 @@ export async function main() {
 
     if (customGuideErrors.length > 0) {
       console.log('\n⚠️  Custom guides warnings:');
-      customGuideErrors.forEach(error => {
+      customGuideErrors.forEach((error) => {
         console.log(`   - ${error}`);
       });
-      console.log('   Custom guides will not be available. Check your custom guides folder configuration.\n');
+      console.log(
+        '   Custom guides will not be available. Check your custom guides folder configuration.\n'
+      );
     }
 
     const allGuides = [...builtInGuides, ...customGuides];
 
     if (allGuides.length === 0) {
-      throw new Error('No guides found. Please check your configuration or reinstall the package.');
+      throw new Error(
+        'No guides found. Please check your configuration or reinstall the package.'
+      );
     }
 
     // Create menu choices with clear labeling
-    const choices = allGuides.map(guide => ({
+    const choices = allGuides.map((guide) => ({
       name: `${guide.displayName}${guide.type === 'custom' ? ' (Custom)' : ''}`,
       value: guide.id,
-      guide: guide
+      guide: guide,
     }));
 
     console.log('\n📝 Available development guides:');
@@ -130,12 +134,18 @@ export async function main() {
       },
     ]);
 
-    const selectedGuide = allGuides.find(guide => guide.id === selectedGuideId);
+    const selectedGuide = allGuides.find(
+      (guide) => guide.id === selectedGuideId
+    );
     if (!selectedGuide) {
-      throw new Error(`Selected guide not found: ${selectedGuideId}. Please try again.`);
+      throw new Error(
+        `Selected guide not found: ${selectedGuideId}. Please try again.`
+      );
     }
 
-    console.log(`\n📦 Installing ${selectedGuide.displayName} Memory Bank...\n`);
+    console.log(
+      `\n📦 Installing ${selectedGuide.displayName} Memory Bank...\n`
+    );
 
     // Create directories with error handling
     console.log('📁 Creating project directories...');
@@ -150,7 +160,9 @@ export async function main() {
         console.log('ℹ️  .memory-bank directory already exists');
       }
     } catch (error) {
-      throw new Error(`Failed to create .memory-bank directory: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to create .memory-bank directory: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
 
     try {
@@ -161,46 +173,59 @@ export async function main() {
         console.log('ℹ️  .specs directory already exists');
       }
     } catch (error) {
-      throw new Error(`Failed to create .specs directory: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to create .specs directory: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
 
     // Copy guide files using the file copy service with comprehensive error handling
     console.log('📄 Copying guide files...');
     const targetDir = process.cwd();
-    const copyResults = fileCopyService.copyGuideFilesWithBackup(selectedGuide, targetDir);
+    const copyResults = fileCopyService.copyGuideFilesWithBackup(
+      selectedGuide,
+      targetDir
+    );
 
     // Check for any copy failures and provide detailed error information
-    const failedCopies = copyResults.filter(result => !result.success);
+    const failedCopies = copyResults.filter((result) => !result.success);
     if (failedCopies.length > 0) {
       console.error('\n❌ Some files failed to copy:');
-      failedCopies.forEach(result => {
+      failedCopies.forEach((result) => {
         console.error(`   - ${result.error}`);
         if (result.rollbackError) {
           console.error(`     Rollback failed: ${result.rollbackError}`);
         }
       });
-      
+
       // Provide recovery instructions
       console.error('\n💡 Recovery options:');
       console.error('   1. Check file permissions in your project directory');
-      console.error('   2. Ensure you have write access to the current directory');
+      console.error(
+        '   2. Ensure you have write access to the current directory'
+      );
       console.error('   3. Try running the command again');
-      console.error('   4. If the issue persists, try running as administrator');
-      
-      throw new Error('Failed to copy some guide files. See error details above.');
+      console.error(
+        '   4. If the issue persists, try running as administrator'
+      );
+
+      throw new Error(
+        'Failed to copy some guide files. See error details above.'
+      );
     }
 
     // Report successful copies with detailed information
     console.log('✅ File copy operations completed successfully:');
-    copyResults.forEach(result => {
+    copyResults.forEach((result) => {
       if (result.success) {
         const fileName = path.basename(result.copiedFilePath || '');
         if (fileName === 'developmentGuide.md') {
-          console.log('   📖 Copied development guide to .memory-bank directory');
+          console.log(
+            '   📖 Copied development guide to .memory-bank directory'
+          );
         } else if (fileName === '.cursorrules') {
           console.log('   ⚙️  Copied .cursorrules to project root');
         }
-        
+
         if (result.overwritten) {
           console.log(`      ⚠️  Overwrote existing ${fileName}`);
           if (result.backupPath) {
@@ -216,40 +241,57 @@ export async function main() {
     console.log('   📂 .specs/ (for feature specifications)');
     console.log('   📄 .cursorrules (project-specific rules)');
     console.log('\n🚀 You can now start using your Memory Bank!');
-    
+
     if (selectedGuide.type === 'custom') {
-      console.log('\n💡 Tip: Run "npx memory-bank-configure" to manage custom guides');
+      console.log(
+        '\n💡 Tip: Run "npx memory-bank-configure" to manage custom guides'
+      );
     }
 
     // Show configuration help if there were issues
     if (configErrors.length > 0 || customGuideErrors.length > 0) {
       console.log('\n🔧 Configuration help:');
-      console.log('   - Run "npx memory-bank-configure" to set up custom guides');
-      console.log('   - Check that your custom guides folder exists and contains valid guides');
-      console.log('   - Ensure your custom guides have a developmentGuide.md file');
+      console.log(
+        '   - Run "npx memory-bank-configure" to set up custom guides'
+      );
+      console.log(
+        '   - Check that your custom guides folder exists and contains valid guides'
+      );
+      console.log(
+        '   - Ensure your custom guides have a developmentGuide.md file'
+      );
     }
 
     // Show next steps
     console.log('\n📋 Next steps:');
     console.log('   1. Review the developmentGuide.md file in .memory-bank/');
     console.log('   2. Customize the .cursorrules file for your project');
-    console.log('   3. Start using the memory bank in your development workflow');
+    console.log(
+      '   3. Start using the memory bank in your development workflow'
+    );
     console.log('   4. Create feature specifications in the .specs/ directory');
-
   } catch (error) {
     console.error(
       '\n❌ Error:',
       error instanceof Error ? error.message : error
     );
-    
+
     // Provide helpful error recovery information
     console.error('\n💡 Troubleshooting tips:');
-    console.error('   - Ensure you have write permissions in the current directory');
-    console.error('   - Check that the memory-bank package is properly installed');
-          console.error('   - Try running "npx memory-bank-configure" to fix configuration issues');
+    console.error(
+      '   - Ensure you have write permissions in the current directory'
+    );
+    console.error(
+      '   - Check that the memory-bank package is properly installed'
+    );
+    console.error(
+      '   - Try running "npx memory-bank-configure" to fix configuration issues'
+    );
     console.error('   - If the problem persists, try reinstalling the package');
-    console.error('   - Check the console output above for specific error details');
-    
+    console.error(
+      '   - Check the console output above for specific error details'
+    );
+
     process.exit(1);
   }
 }

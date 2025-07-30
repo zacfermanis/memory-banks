@@ -12,7 +12,11 @@ export class FileCopyService {
   copyGuide(guide: GuideInfo, targetDir: string): CopyResult {
     try {
       const sourcePath = path.join(guide.folderPath, 'developmentGuide.md');
-      const targetPath = path.join(targetDir, '.memory-bank', 'developmentGuide.md');
+      const targetPath = path.join(
+        targetDir,
+        '.memory-bank',
+        'developmentGuide.md'
+      );
 
       // Ensure target directory exists first
       const targetDirectory = path.dirname(targetPath);
@@ -45,7 +49,10 @@ export class FileCopyService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error during file copy',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error during file copy',
       };
     }
   }
@@ -83,7 +90,10 @@ export class FileCopyService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error during file copy',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error during file copy',
       };
     }
   }
@@ -124,7 +134,10 @@ export class FileCopyService {
     } catch (error) {
       return {
         isValid: false,
-        error: error instanceof Error ? error.message : 'Unknown error during validation',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error during validation',
       };
     }
   }
@@ -138,10 +151,12 @@ export class FileCopyService {
     // Validate target directory first
     const validation = this.validateTargetDirectory(targetDir);
     if (!validation.isValid) {
-      return [{
-        success: false,
-        error: validation.error || 'Target directory validation failed',
-      }];
+      return [
+        {
+          success: false,
+          error: validation.error || 'Target directory validation failed',
+        },
+      ];
     }
 
     // Always copy developmentGuide.md
@@ -163,7 +178,11 @@ export class FileCopyService {
   copyGuideWithBackup(guide: GuideInfo, targetDir: string): CopyResult {
     try {
       const sourcePath = path.join(guide.folderPath, 'developmentGuide.md');
-      const targetPath = path.join(targetDir, '.memory-bank', 'developmentGuide.md');
+      const targetPath = path.join(
+        targetDir,
+        '.memory-bank',
+        'developmentGuide.md'
+      );
 
       // Ensure target directory exists first
       const targetDirectory = path.dirname(targetPath);
@@ -208,18 +227,27 @@ export class FileCopyService {
         // Rollback if write fails and we have a backup
         if (backupPath) {
           try {
-            const restoreResult = this.restoreFromBackup(targetPath, backupPath);
+            const restoreResult = this.restoreFromBackup(
+              targetPath,
+              backupPath
+            );
             if (restoreResult.success) {
               return {
                 success: false,
-                error: writeError instanceof Error ? writeError.message : 'Unknown write error',
+                error:
+                  writeError instanceof Error
+                    ? writeError.message
+                    : 'Unknown write error',
                 rolledBack: true,
                 backupPath,
               };
             } else {
               return {
                 success: false,
-                error: writeError instanceof Error ? writeError.message : 'Unknown write error',
+                error:
+                  writeError instanceof Error
+                    ? writeError.message
+                    : 'Unknown write error',
                 rolledBack: false,
                 rollbackError: restoreResult.error || 'Rollback failed',
                 backupPath,
@@ -228,9 +256,15 @@ export class FileCopyService {
           } catch (rollbackError) {
             return {
               success: false,
-              error: writeError instanceof Error ? writeError.message : 'Unknown write error',
+              error:
+                writeError instanceof Error
+                  ? writeError.message
+                  : 'Unknown write error',
               rolledBack: false,
-              rollbackError: rollbackError instanceof Error ? rollbackError.message : 'Rollback failed',
+              rollbackError:
+                rollbackError instanceof Error
+                  ? rollbackError.message
+                  : 'Rollback failed',
               backupPath,
             };
           }
@@ -238,13 +272,19 @@ export class FileCopyService {
 
         return {
           success: false,
-          error: writeError instanceof Error ? writeError.message : 'Unknown write error',
+          error:
+            writeError instanceof Error
+              ? writeError.message
+              : 'Unknown write error',
         };
       }
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error during file copy',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error during file copy',
       };
     }
   }
@@ -294,18 +334,27 @@ export class FileCopyService {
         // Rollback if write fails and we have a backup
         if (backupPath) {
           try {
-            const restoreResult = this.restoreFromBackup(targetPath, backupPath);
+            const restoreResult = this.restoreFromBackup(
+              targetPath,
+              backupPath
+            );
             if (restoreResult.success) {
               return {
                 success: false,
-                error: writeError instanceof Error ? writeError.message : 'Unknown write error',
+                error:
+                  writeError instanceof Error
+                    ? writeError.message
+                    : 'Unknown write error',
                 rolledBack: true,
                 backupPath,
               };
             } else {
               return {
                 success: false,
-                error: writeError instanceof Error ? writeError.message : 'Unknown write error',
+                error:
+                  writeError instanceof Error
+                    ? writeError.message
+                    : 'Unknown write error',
                 rolledBack: false,
                 rollbackError: restoreResult.error || 'Rollback failed',
                 backupPath,
@@ -314,9 +363,15 @@ export class FileCopyService {
           } catch (rollbackError) {
             return {
               success: false,
-              error: writeError instanceof Error ? writeError.message : 'Unknown write error',
+              error:
+                writeError instanceof Error
+                  ? writeError.message
+                  : 'Unknown write error',
               rolledBack: false,
-              rollbackError: rollbackError instanceof Error ? rollbackError.message : 'Rollback failed',
+              rollbackError:
+                rollbackError instanceof Error
+                  ? rollbackError.message
+                  : 'Rollback failed',
               backupPath,
             };
           }
@@ -324,13 +379,19 @@ export class FileCopyService {
 
         return {
           success: false,
-          error: writeError instanceof Error ? writeError.message : 'Unknown write error',
+          error:
+            writeError instanceof Error
+              ? writeError.message
+              : 'Unknown write error',
         };
       }
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error during file copy',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error during file copy',
       };
     }
   }
@@ -344,10 +405,12 @@ export class FileCopyService {
     // Validate target directory first
     const validation = this.validateTargetDirectory(targetDir);
     if (!validation.isValid) {
-      return [{
-        success: false,
-        error: validation.error || 'Target directory validation failed',
-      }];
+      return [
+        {
+          success: false,
+          error: validation.error || 'Target directory validation failed',
+        },
+      ];
     }
 
     // Always copy developmentGuide.md with backup
@@ -407,8 +470,11 @@ export class FileCopyService {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error during restore',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Unknown error during restore',
       };
     }
   }
-} 
+}

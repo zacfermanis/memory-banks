@@ -85,4 +85,4 @@ export interface MemoryBankType {
   name: string;
   cursorRulesPath: string;
   developmentGuidePath: string;
-} 
+}

@@ -1,6 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { GuideInfo, CustomGuideConfig, ValidationResult } from '../config/types';
+import {
+  GuideInfo,
+  CustomGuideConfig,
+  ValidationResult,
+} from '../config/types';
 import { validateGuideStructure } from '../utils/validation';
 
 /**
@@ -16,21 +20,42 @@ export class GuideDiscoveryService {
         id: 'lua',
         displayName: 'Lua - For Lua/Love2D game development',
         type: 'built-in',
-        folderPath: path.join(__dirname, '..', '..', 'src', 'developmentGuides', 'Lua'),
+        folderPath: path.join(
+          __dirname,
+          '..',
+          '..',
+          'src',
+          'developmentGuides',
+          'Lua'
+        ),
         hasCursorRules: true,
       },
       {
         id: 'web',
         displayName: 'Web - For TypeScript/React/Next.js development',
         type: 'built-in',
-        folderPath: path.join(__dirname, '..', '..', 'src', 'developmentGuides', 'Web'),
+        folderPath: path.join(
+          __dirname,
+          '..',
+          '..',
+          'src',
+          'developmentGuides',
+          'Web'
+        ),
         hasCursorRules: true,
       },
       {
         id: 'java',
         displayName: 'Java - For Java/Spring Boot development',
         type: 'built-in',
-        folderPath: path.join(__dirname, '..', '..', 'src', 'developmentGuides', 'Java'),
+        folderPath: path.join(
+          __dirname,
+          '..',
+          '..',
+          'src',
+          'developmentGuides',
+          'Java'
+        ),
         hasCursorRules: true,
       },
     ];
@@ -61,7 +86,7 @@ export class GuideDiscoveryService {
       for (const item of items) {
         try {
           const itemPath = path.join(config.customGuidesFolder, item);
-          
+
           // Check if item is a directory
           const itemStats = fs.statSync(itemPath);
           if (!itemStats.isDirectory()) {
@@ -76,17 +101,26 @@ export class GuideDiscoveryService {
           }
 
           // Check for required developmentGuide.md file
-          const developmentGuidePath = path.join(itemPath, 'developmentGuide.md');
+          const developmentGuidePath = path.join(
+            itemPath,
+            'developmentGuide.md'
+          );
           if (!fs.existsSync(developmentGuidePath)) {
-            errors.push(`Guide '${item}' missing required file: developmentGuide.md`);
+            errors.push(
+              `Guide '${item}' missing required file: developmentGuide.md`
+            );
             continue;
           }
 
           // Check if there's a custom menu item configuration for this guide
-          const customMenuItem = config.menuItems.find(menuItem => menuItem.id === item);
-          
+          const customMenuItem = config.menuItems.find(
+            (menuItem) => menuItem.id === item
+          );
+
           // Determine if guide has cursor rules
-          const hasCursorRules = fs.existsSync(path.join(itemPath, '.cursorrules'));
+          const hasCursorRules = fs.existsSync(
+            path.join(itemPath, '.cursorrules')
+          );
 
           const guide: GuideInfo = {
             id: item,
@@ -100,14 +134,16 @@ export class GuideDiscoveryService {
 
           guides.push(guide);
         } catch (itemError) {
-          errors.push(`Error processing guide '${item}': ${itemError instanceof Error ? itemError.message : 'Unknown error'}`);
+          errors.push(
+            `Error processing guide '${item}': ${itemError instanceof Error ? itemError.message : 'Unknown error'}`
+          );
         }
       }
 
       // Log any errors for debugging
       if (errors.length > 0) {
         console.warn('⚠️  Custom guide discovery warnings:');
-        errors.forEach(error => {
+        errors.forEach((error) => {
           console.warn(`   - ${error}`);
         });
       }
@@ -115,7 +151,9 @@ export class GuideDiscoveryService {
       return guides;
     } catch (error) {
       // Return empty array on any error, but log the error
-      console.warn(`⚠️  Custom guides discovery failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.warn(
+        `⚠️  Custom guides discovery failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
       return [];
     }
   }
@@ -133,7 +171,7 @@ export class GuideDiscoveryService {
   getAllGuides(config: CustomGuideConfig): GuideInfo[] {
     const builtInGuides = this.discoverBuiltInGuides();
     const customGuides = this.discoverCustomGuides(config);
-    
+
     // Combine guides with built-in guides first, then custom guides
     return [...builtInGuides, ...customGuides];
   }
@@ -155,7 +193,10 @@ export class GuideDiscoveryService {
       }
 
       // Check for required developmentGuide.md file
-      const developmentGuidePath = path.join(guide.folderPath, 'developmentGuide.md');
+      const developmentGuidePath = path.join(
+        guide.folderPath,
+        'developmentGuide.md'
+      );
       if (!fs.existsSync(developmentGuidePath)) {
         return false;
       }
@@ -189,7 +230,9 @@ export class GuideDiscoveryService {
 
       const guideName = path.basename(guidePath);
       const developmentGuidePath = path.join(guidePath, 'developmentGuide.md');
-      const hasCursorRules = fs.existsSync(path.join(guidePath, '.cursorrules'));
+      const hasCursorRules = fs.existsSync(
+        path.join(guidePath, '.cursorrules')
+      );
 
       if (!fs.existsSync(developmentGuidePath)) {
         return null;
@@ -206,4 +249,4 @@ export class GuideDiscoveryService {
       return null;
     }
   }
-} 
+}

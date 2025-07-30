@@ -30,6 +30,7 @@ export class ConfigureCommand {
    * Show the main configuration menu
    */
   private async showMainMenu(config: CustomGuideConfig): Promise<void> {
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const { action } = await inquirer.prompt([
         {
@@ -40,9 +41,9 @@ export class ConfigureCommand {
             'Set custom guides folder',
             'Manage menu items',
             'View current configuration',
-            'Exit'
-          ]
-        }
+            'Exit',
+          ],
+        },
       ]);
 
       switch (action) {
@@ -65,19 +66,21 @@ export class ConfigureCommand {
   /**
    * Configure the custom guides folder path
    */
-  private async configureCustomGuidesFolder(config: CustomGuideConfig): Promise<void> {
+  private async configureCustomGuidesFolder(
+    config: CustomGuideConfig
+  ): Promise<void> {
     const { folderPath } = await inquirer.prompt([
       {
         type: 'input',
         name: 'folderPath',
         message: 'Enter the path to your custom guides folder:',
-        default: config.customGuidesFolder
-      }
+        default: config.customGuidesFolder,
+      },
     ]);
 
     const updatedConfig = {
       ...config,
-      customGuidesFolder: folderPath
+      customGuidesFolder: folderPath,
     };
 
     const validation = this.configManager.validateConfig(updatedConfig);
@@ -98,6 +101,7 @@ export class ConfigureCommand {
    * Manage menu items (add, edit, remove)
    */
   private async manageMenuItems(config: CustomGuideConfig): Promise<void> {
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const { action } = await inquirer.prompt([
         {
@@ -108,9 +112,9 @@ export class ConfigureCommand {
             'Add new menu item',
             'Edit existing menu item',
             'Remove menu item',
-            'Back to main menu'
-          ]
-        }
+            'Back to main menu',
+          ],
+        },
       ]);
 
       switch (action) {
@@ -137,24 +141,25 @@ export class ConfigureCommand {
       {
         type: 'input',
         name: 'displayName',
-        message: 'Enter the display name for this menu item:'
+        message: 'Enter the display name for this menu item:',
       },
       {
         type: 'input',
         name: 'folderPath',
-        message: 'Enter the folder name (should match a subfolder in your guides directory):'
-      }
+        message:
+          'Enter the folder name (should match a subfolder in your guides directory):',
+      },
     ]);
 
     const newMenuItem: CustomMenuItem = {
       id: this.generateId(),
       displayName,
-      folderPath
+      folderPath,
     };
 
     const updatedConfig = {
       ...config,
-      menuItems: [...config.menuItems, newMenuItem]
+      menuItems: [...config.menuItems, newMenuItem],
     };
 
     const validation = this.configManager.validateConfig(updatedConfig);
@@ -185,11 +190,13 @@ export class ConfigureCommand {
         type: 'list',
         name: 'selectedItem',
         message: 'Select a menu item to edit:',
-        choices: config.menuItems.map(item => item.displayName)
-      }
+        choices: config.menuItems.map((item) => item.displayName),
+      },
     ]);
 
-    const itemToEdit = config.menuItems.find(item => item.displayName === selectedItem);
+    const itemToEdit = config.menuItems.find(
+      (item) => item.displayName === selectedItem
+    );
     if (!itemToEdit) {
       console.error('Menu item not found.');
       return;
@@ -200,23 +207,21 @@ export class ConfigureCommand {
         type: 'input',
         name: 'displayName',
         message: 'Enter the new display name:',
-        default: itemToEdit.displayName
+        default: itemToEdit.displayName,
       },
       {
         type: 'input',
         name: 'folderPath',
         message: 'Enter the new folder path:',
-        default: itemToEdit.folderPath
-      }
+        default: itemToEdit.folderPath,
+      },
     ]);
 
     const updatedConfig = {
       ...config,
-      menuItems: config.menuItems.map(item =>
-        item.id === itemToEdit.id
-          ? { ...item, displayName, folderPath }
-          : item
-      )
+      menuItems: config.menuItems.map((item) =>
+        item.id === itemToEdit.id ? { ...item, displayName, folderPath } : item
+      ),
     };
 
     const validation = this.configManager.validateConfig(updatedConfig);
@@ -247,8 +252,8 @@ export class ConfigureCommand {
         type: 'list',
         name: 'selectedItem',
         message: 'Select a menu item to remove:',
-        choices: config.menuItems.map(item => item.displayName)
-      }
+        choices: config.menuItems.map((item) => item.displayName),
+      },
     ]);
 
     const { confirm } = await inquirer.prompt([
@@ -256,8 +261,8 @@ export class ConfigureCommand {
         type: 'confirm',
         name: 'confirm',
         message: `Are you sure you want to remove "${selectedItem}"?`,
-        default: false
-      }
+        default: false,
+      },
     ]);
 
     if (!confirm) {
@@ -266,7 +271,9 @@ export class ConfigureCommand {
 
     const updatedConfig = {
       ...config,
-      menuItems: config.menuItems.filter(item => item.displayName !== selectedItem)
+      menuItems: config.menuItems.filter(
+        (item) => item.displayName !== selectedItem
+      ),
     };
 
     try {
@@ -284,11 +291,11 @@ export class ConfigureCommand {
     console.log('Current Configuration:');
     console.log(`Custom Guides Folder: ${config.customGuidesFolder}`);
     console.log('Menu Items:');
-    
+
     if (config.menuItems.length === 0) {
       console.log('  No menu items configured');
     } else {
-      config.menuItems.forEach(item => {
+      config.menuItems.forEach((item) => {
         console.log(`  - ${item.displayName} (folder: ${item.folderPath})`);
       });
     }
@@ -298,8 +305,8 @@ export class ConfigureCommand {
         type: 'list',
         name: 'action',
         message: 'Press Enter to continue:',
-        choices: ['Back to main menu']
-      }
+        choices: ['Back to main menu'],
+      },
     ]);
   }
 
@@ -309,4 +316,4 @@ export class ConfigureCommand {
   private generateId(): string {
     return `menu-item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
-} 
+}

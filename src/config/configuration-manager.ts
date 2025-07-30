@@ -1,10 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import {
-  CustomGuideConfig,
-  ValidationResult,
-} from './types';
+import { CustomGuideConfig, ValidationResult } from './types';
 
 /**
  * Manages configuration for custom development guides
@@ -59,7 +56,7 @@ export class ConfigurationManager {
         try {
           const backupData = fs.readFileSync(this.backupPath, 'utf8');
           const backupConfig = JSON.parse(backupData) as CustomGuideConfig;
-          
+
           if (
             typeof backupConfig === 'object' &&
             backupConfig !== null &&
@@ -83,7 +80,7 @@ export class ConfigurationManager {
         try {
           const backupData = fs.readFileSync(this.backupPath, 'utf8');
           const backupConfig = JSON.parse(backupData) as CustomGuideConfig;
-          
+
           if (
             typeof backupConfig === 'object' &&
             backupConfig !== null &&
@@ -99,7 +96,7 @@ export class ConfigurationManager {
           // Backup is also corrupted, continue to default
         }
       }
-      
+
       return this.getDefaultConfig();
     }
   }
@@ -124,11 +121,7 @@ export class ConfigurationManager {
     }
 
     // Write the configuration file
-    fs.writeFileSync(
-      this.configPath,
-      JSON.stringify(config, null, 2),
-      'utf8'
-    );
+    fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2), 'utf8');
   }
 
   /**
@@ -199,14 +192,22 @@ export class ConfigurationManager {
 
       // Check if menu item folder exists (only if custom guides folder exists)
       if (fs.existsSync(config.customGuidesFolder)) {
-        const menuItemPath = path.join(config.customGuidesFolder, menuItem.folderPath);
+        const menuItemPath = path.join(
+          config.customGuidesFolder,
+          menuItem.folderPath
+        );
         if (!fs.existsSync(menuItemPath)) {
           warnings.push('Menu item folder does not exist');
         } else {
           // Check if it has required developmentGuide.md file
-          const developmentGuidePath = path.join(menuItemPath, 'developmentGuide.md');
+          const developmentGuidePath = path.join(
+            menuItemPath,
+            'developmentGuide.md'
+          );
           if (!fs.existsSync(developmentGuidePath)) {
-            warnings.push(`Menu item '${menuItem.displayName}' missing required file: developmentGuide.md`);
+            warnings.push(
+              `Menu item '${menuItem.displayName}' missing required file: developmentGuide.md`
+            );
           }
         }
       }
@@ -237,7 +238,7 @@ export class ConfigurationManager {
     try {
       const backupData = fs.readFileSync(this.backupPath, 'utf8');
       const backupConfig = JSON.parse(backupData) as CustomGuideConfig;
-      
+
       if (
         typeof backupConfig === 'object' &&
         backupConfig !== null &&
@@ -279,4 +280,4 @@ export class ConfigurationManager {
   getBackupPath(): string {
     return this.backupPath;
   }
-} 
+}
