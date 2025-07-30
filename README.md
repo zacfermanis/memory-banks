@@ -10,7 +10,7 @@
 
 ## 🚀 Overview
 
-Memory Bank for Agents is a sophisticated command-line interface that initializes AI-ready development environments with comprehensive documentation systems, cursor rules, and memory management tools. Perfect for Web (TypeScript/React/Next.js), Lua (Love2D game development), and Java (Spring Boot) development workflows.
+Memory Bank for Agents is a modern command-line interface that initializes AI-ready development environments with comprehensive documentation systems, cursor rules, and memory management tools. Perfect for Web (TypeScript/React/Next.js), Lua (Love2D game development), and Java (Spring Boot) development workflows.
 
 ## ✨ Features
 
@@ -97,37 +97,6 @@ your-project/
 Memory Bank for Agents creates the foundation structure. You can then expand the Memory Bank system by creating additional documentation files as needed.
 
 ## 🔧 Development Setup
-
-### Husky Pre-commit Hook
-
-This project uses Husky to ensure code quality on every commit:
-
-- **🧪 Quality Checks**: Tests and builds run before commit to ensure code quality
-- **🔨 Build Verification**: TypeScript compilation is verified before commit
-- **📦 Manual Version Control**: Version bumping is done manually when needed
-
-#### Version Bumping
-
-To bump the version manually:
-
-```bash
-npm run bump-version
-```
-
-This will increment the patch version (e.g., 2.0.12 → 2.0.13).
-
-#### Pre-commit Hook Details
-
-The pre-commit hook performs the following actions:
-1. Runs all Jest tests to ensure code quality
-2. Builds the TypeScript project to catch compilation errors
-3. Only allows commit if all checks pass
-
-#### When to Bump Versions
-
-- **Patch version** (2.0.12 → 2.0.13): Bug fixes and minor improvements
-- **Minor version** (2.0.12 → 2.1.0): New features (manual edit of package.json)
-- **Major version** (2.0.12 → 3.0.0): Breaking changes (manual edit of package.json)
 
 ### 🧠 Creating Memory Bank Files
 
@@ -304,4 +273,3 @@ Built with ❤️ for the AI development community, this tool aims to bridge the
 <div align="center">
   <strong>Made with ❤️ by <a href="https://github.com/zacfermanis">Zac Fermanis</a></strong>
 </div>
-# Test comment
