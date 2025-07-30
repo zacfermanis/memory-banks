@@ -13,6 +13,12 @@ describe('FileCopyService', () => {
   beforeEach(() => {
     fileCopyService = new FileCopyService();
     jest.clearAllMocks();
+    // Reset all mocks to their default behavior
+    mockedFs.existsSync.mockReset();
+    mockedFs.readFileSync.mockReset();
+    mockedFs.writeFileSync.mockReset();
+    mockedFs.mkdirSync.mockReset();
+    mockedFs.statSync.mockReset();
   });
 
   describe('copyGuide', () => {
@@ -249,12 +255,18 @@ describe('FileCopyService', () => {
       const targetDir = '/target/directory';
 
       // Mock operations: backup succeeds, new file write fails, rollback succeeds
-      mockedFs.existsSync
-        .mockReturnValueOnce(true) // .memory-bank directory exists
-        .mockReturnValueOnce(true) // target file exists
-        .mockReturnValueOnce(true) // source file exists
-        .mockReturnValueOnce(false) // backup file doesn't exist initially
-        .mockReturnValueOnce(true); // backup file exists for restore
+      mockedFs.existsSync.mockImplementation((path) => {
+        const pathStr = path.toString();
+        // Return true for any backup file path
+        if (pathStr.includes('.backup.')) {
+          return true;
+        }
+        // Return true for directory, target file, and source file
+        if (pathStr.includes('.memory-bank') || pathStr.includes('developmentGuide.md')) {
+          return true;
+        }
+        return false;
+      });
       mockedFs.readFileSync
         .mockReturnValueOnce('Existing content' as any) // existing file content
         .mockReturnValueOnce('New content' as any) // new file content
@@ -286,12 +298,18 @@ describe('FileCopyService', () => {
       const targetDir = '/target/directory';
 
       // Mock operations: backup succeeds, new file write fails, rollback fails
-      mockedFs.existsSync
-        .mockReturnValueOnce(true) // .memory-bank directory exists
-        .mockReturnValueOnce(true) // target file exists
-        .mockReturnValueOnce(true) // source file exists
-        .mockReturnValueOnce(false) // backup file doesn't exist initially
-        .mockReturnValueOnce(true); // backup file exists for restore
+      mockedFs.existsSync.mockImplementation((path) => {
+        const pathStr = path.toString();
+        // Return true for any backup file path
+        if (pathStr.includes('.backup.')) {
+          return true;
+        }
+        // Return true for directory, target file, and source file
+        if (pathStr.includes('.memory-bank') || pathStr.includes('developmentGuide.md')) {
+          return true;
+        }
+        return false;
+      });
       mockedFs.readFileSync
         .mockReturnValueOnce('Existing content' as any) // existing file content
         .mockReturnValueOnce('New content' as any) // new file content
@@ -558,14 +576,15 @@ describe('FileCopyService', () => {
 
       const targetDir = '/target/directory';
 
-      // Mock target directory validation
+      // Mock target directory validation (validateTargetDirectory calls)
       mockedFs.existsSync
-        .mockReturnValueOnce(true) // target directory exists
-        .mockReturnValueOnce(true) // .memory-bank directory exists
-        .mockReturnValueOnce(false) // target guide file doesn't exist
-        .mockReturnValueOnce(true) // source guide file exists
-        .mockReturnValueOnce(false) // target cursor rules file doesn't exist
-        .mockReturnValueOnce(true); // source cursor rules file exists
+        .mockReturnValueOnce(true) // target directory exists (validateTargetDirectory)
+        .mockReturnValueOnce(true) // .memory-bank directory exists (copyGuide)
+        .mockReturnValueOnce(false) // target guide file doesn't exist (copyGuide)
+        .mockReturnValueOnce(true) // source guide file exists (copyGuide)
+        .mockReturnValueOnce(false) // target cursor rules file doesn't exist (copyCursorRules)
+        .mockReturnValueOnce(true); // source cursor rules file exists (copyCursorRules)
+      
       mockedFs.statSync.mockReturnValue({
         isDirectory: () => true,
       } as fs.Stats);
@@ -576,11 +595,14 @@ describe('FileCopyService', () => {
 
       expect(results).toHaveLength(2);
       
-      const guideResult = results.find((r: CopyResult) => r.copiedFilePath?.includes('developmentGuide.md'));
-      const cursorResult = results.find((r: CopyResult) => r.copiedFilePath?.includes('.cursorrules'));
+      // The first result should be the guide copy, second should be cursor rules
+      const guideResult = results[0];
+      const cursorResult = results[1];
 
-      expect(guideResult?.success).toBe(true);
-      expect(cursorResult?.success).toBe(true);
+      expect(guideResult.success).toBe(true);
+      expect(guideResult.copiedFilePath).toContain('developmentGuide.md');
+      expect(cursorResult.success).toBe(true);
+      expect(cursorResult.copiedFilePath).toContain('.cursorrules');
     });
 
     it('should copy only guide when cursor rules are not available', () => {
@@ -646,13 +668,13 @@ describe('FileCopyService', () => {
 
       expect(results).toHaveLength(2);
       
-      // Find results by checking for error messages and file paths
-      const guideResult = results.find((r: CopyResult) => r.error?.includes('Guide read error') || r.copiedFilePath?.includes('developmentGuide.md'));
-      const cursorResult = results.find((r: CopyResult) => r.copiedFilePath?.includes('.cursorrules'));
+      // The first result should be the guide copy (failed), second should be cursor rules (success)
+      const guideResult = results[0];
+      const cursorResult = results[1];
 
-      expect(guideResult?.success).toBe(false);
-      expect(guideResult?.error).toContain('Guide read error');
-      expect(cursorResult?.success).toBe(true);
+      expect(guideResult.success).toBe(false);
+      expect(guideResult.error).toContain('Guide read error');
+      expect(cursorResult.success).toBe(true);
     });
 
     it('should validate target directory before copying', () => {
@@ -666,7 +688,7 @@ describe('FileCopyService', () => {
 
       const targetDir = '/invalid/directory';
 
-      // Mock invalid target directory
+      // Mock invalid target directory - validateTargetDirectory will fail
       mockedFs.existsSync.mockReturnValue(false);
 
       const results = fileCopyService.copyGuideFiles(guide, targetDir);
@@ -689,17 +711,18 @@ describe('FileCopyService', () => {
       const targetDir = '/target/directory';
 
       // Mock directory validation
-      mockedFs.existsSync
-        .mockReturnValueOnce(true) // target directory exists
-        .mockReturnValueOnce(true) // .memory-bank directory exists
-        .mockReturnValueOnce(true) // target developmentGuide.md exists
-        .mockReturnValueOnce(true) // source developmentGuide.md exists
-        .mockReturnValueOnce(false) // backup doesn't exist initially
-        .mockReturnValueOnce(true) // backup exists for restore
-        .mockReturnValueOnce(true) // target .cursorrules exists
-        .mockReturnValueOnce(true) // source .cursorrules exists
-        .mockReturnValueOnce(false) // backup doesn't exist initially
-        .mockReturnValueOnce(true); // backup exists for restore
+      mockedFs.existsSync.mockImplementation((path) => {
+        const pathStr = path.toString();
+        // Return true for any backup file path
+        if (pathStr.includes('.backup.')) {
+          return true;
+        }
+        // Return true for directory, target file, and source file
+        if (pathStr.includes('.memory-bank') || pathStr.includes('developmentGuide.md') || pathStr.includes('.cursorrules') || pathStr.includes('/target/directory')) {
+          return true;
+        }
+        return false;
+      });
 
       mockedFs.statSync.mockReturnValue({
         isDirectory: () => true,
@@ -719,15 +742,16 @@ describe('FileCopyService', () => {
 
       expect(results).toHaveLength(2);
       
-      const guideResult = results.find(r => r.copiedFilePath?.includes('developmentGuide.md'));
-      const cursorResult = results.find(r => r.copiedFilePath?.includes('.cursorrules'));
+      // The first result should be the guide copy, second should be cursor rules
+      const guideResult = results[0];
+      const cursorResult = results[1];
 
-      expect(guideResult?.success).toBe(true);
-      expect(guideResult?.overwritten).toBe(true);
-      expect(guideResult?.backupPath).toContain('.backup');
-      expect(cursorResult?.success).toBe(true);
-      expect(cursorResult?.overwritten).toBe(true);
-      expect(cursorResult?.backupPath).toContain('.backup');
+      expect(guideResult.success).toBe(true);
+      expect(guideResult.overwritten).toBe(true);
+      expect(guideResult.backupPath).toContain('.backup');
+      expect(cursorResult.success).toBe(true);
+      expect(cursorResult.overwritten).toBe(true);
+      expect(cursorResult.backupPath).toContain('.backup');
     });
   });
 

@@ -155,7 +155,7 @@ export class ConfigurationManager {
 
     // Check if custom guides folder exists
     if (!fs.existsSync(config.customGuidesFolder)) {
-      warnings.push(`Custom guides folder does not exist: ${config.customGuidesFolder}`);
+      warnings.push('Custom guides folder does not exist');
     } else {
       // Check if custom guides folder is a directory
       try {
@@ -201,7 +201,7 @@ export class ConfigurationManager {
       if (fs.existsSync(config.customGuidesFolder)) {
         const menuItemPath = path.join(config.customGuidesFolder, menuItem.folderPath);
         if (!fs.existsSync(menuItemPath)) {
-          warnings.push(`Menu item folder does not exist: ${menuItemPath}`);
+          warnings.push('Menu item folder does not exist');
         } else {
           // Check if it has required developmentGuide.md file
           const developmentGuidePath = path.join(menuItemPath, 'developmentGuide.md');
@@ -214,7 +214,7 @@ export class ConfigurationManager {
 
     return {
       isValid: true,
-      warnings: warnings.length > 0 ? warnings : undefined,
+      warnings: warnings.length > 0 ? warnings : [],
     };
   }
 

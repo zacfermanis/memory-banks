@@ -165,7 +165,8 @@ describe('ConfigurationManager', () => {
 
       configManager.saveConfig(config);
 
-      expect(mockedFs.mkdirSync).toHaveBeenCalledWith(mockConfigDir, { recursive: true });
+      // mkdirSync should not be called since directory exists
+      expect(mockedFs.mkdirSync).not.toHaveBeenCalled();
       expect(mockedFs.writeFileSync).toHaveBeenCalledWith(
         mockBackupPath,
         'existing config content',
@@ -393,9 +394,19 @@ describe('ConfigurationManager', () => {
         ],
       };
 
-      mockedFs.existsSync
-        .mockReturnValueOnce(true) // custom guides folder exists
-        .mockReturnValueOnce(false); // menu item folder does not exist
+      mockedFs.existsSync.mockImplementation((path) => {
+        const pathStr = path.toString();
+        if (pathStr === '/custom/guides') {
+          return true; // custom guides folder exists
+        }
+        if (pathStr === '/custom/guides/test-guide') {
+          return false; // menu item folder does not exist
+        }
+        return false;
+      });
+      mockedFs.statSync.mockReturnValue({
+        isDirectory: () => true,
+      } as any);
 
       const result = configManager.validateConfig(config);
 

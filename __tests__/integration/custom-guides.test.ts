@@ -27,6 +27,15 @@ describe('Custom Development Guides Integration', () => {
     guideDiscoveryService = new GuideDiscoveryService();
     fileCopyService = new FileCopyService();
     jest.clearAllMocks();
+    
+    // Reset mock implementations
+    mockedFs.existsSync.mockReset();
+    mockedFs.readFileSync.mockReset();
+    mockedFs.writeFileSync.mockReset();
+    mockedFs.mkdirSync.mockReset();
+    mockedFs.statSync.mockReset();
+    mockedFs.readdirSync.mockReset();
+    mockedFs.accessSync.mockReset();
   });
 
   describe('Complete Workflow Integration', () => {
@@ -47,17 +56,39 @@ describe('Custom Development Guides Integration', () => {
       };
 
       // Mock configuration loading
-      mockedFs.existsSync
-        .mockReturnValueOnce(true) // config file exists
-        .mockReturnValueOnce(true) // custom guides folder exists
-        .mockReturnValueOnce(true) // guide folder exists
-        .mockReturnValueOnce(true) // developmentGuide.md exists
-        .mockReturnValueOnce(true) // .cursorrules exists
-        .mockReturnValueOnce(true) // target directory exists
-        .mockReturnValueOnce(false) // target .memory-bank doesn't exist
-        .mockReturnValueOnce(true) // source developmentGuide.md exists
-        .mockReturnValueOnce(false) // target .cursorrules doesn't exist
-        .mockReturnValueOnce(true); // source .cursorrules exists
+      // Mock existsSync to handle dynamic paths
+      mockedFs.existsSync.mockImplementation((path) => {
+        const pathStr = path.toString();
+        // Return true for config file
+        if (pathStr.includes('config.json')) {
+          return true;
+        }
+        // Return true for custom guides folder
+        if (pathStr === mockCustomGuidesDir) {
+          return true;
+        }
+        // Return true for guide folder
+        if (pathStr.includes('test-guide')) {
+          return true;
+        }
+        // Return true for developmentGuide.md
+        if (pathStr.includes('developmentGuide.md')) {
+          return true;
+        }
+        // Return true for .cursorrules
+        if (pathStr.includes('.cursorrules')) {
+          return true;
+        }
+        // Return true for target directory
+        if (pathStr === '/target/project') {
+          return true;
+        }
+        // Return false for target .memory-bank (should be created)
+        if (pathStr.includes('.memory-bank')) {
+          return false;
+        }
+        return false;
+      });
 
       mockedFs.readFileSync
         .mockReturnValueOnce(JSON.stringify(config)) // config file
@@ -335,17 +366,18 @@ describe('Custom Development Guides Integration', () => {
       };
 
       // Mock file system with existing files
-      mockedFs.existsSync
-        .mockReturnValueOnce(true) // target directory exists
-        .mockReturnValueOnce(true) // .memory-bank directory exists
-        .mockReturnValueOnce(true) // target developmentGuide.md exists
-        .mockReturnValueOnce(true) // source developmentGuide.md exists
-        .mockReturnValueOnce(false) // backup doesn't exist initially
-        .mockReturnValueOnce(true) // backup exists for restore
-        .mockReturnValueOnce(true) // target .cursorrules exists
-        .mockReturnValueOnce(true) // source .cursorrules exists
-        .mockReturnValueOnce(false) // backup doesn't exist initially
-        .mockReturnValueOnce(true); // backup exists for restore
+      mockedFs.existsSync.mockImplementation((path) => {
+        const pathStr = path.toString();
+        // Return true for directories and existing files
+        if (pathStr.includes('/target/project') || pathStr.includes('.memory-bank') || pathStr.includes('developmentGuide.md') || pathStr.includes('.cursorrules')) {
+          return true;
+        }
+        // Return false for backup files (should be created)
+        if (pathStr.includes('.backup.')) {
+          return false;
+        }
+        return false;
+      });
 
       mockedFs.statSync.mockReturnValue({
         isDirectory: () => true,

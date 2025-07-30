@@ -13,6 +13,14 @@ describe('GuideDiscoveryService', () => {
   beforeEach(() => {
     guideDiscoveryService = new GuideDiscoveryService();
     jest.clearAllMocks();
+    // Reset all mocks to their default behavior
+    mockedFs.existsSync.mockReset();
+    mockedFs.readFileSync.mockReset();
+    mockedFs.writeFileSync.mockReset();
+    mockedFs.mkdirSync.mockReset();
+    mockedFs.statSync.mockReset();
+    mockedFs.readdirSync.mockReset();
+    mockedFs.accessSync.mockReset();
   });
 
   describe('discoverBuiltInGuides', () => {
@@ -44,11 +52,19 @@ describe('GuideDiscoveryService', () => {
       };
 
       // Mock file system operations
-      mockedFs.existsSync
-        .mockReturnValueOnce(true) // custom guides folder exists
-        .mockReturnValueOnce(true) // item is directory
-        .mockReturnValueOnce(true) // developmentGuide.md exists
-        .mockReturnValueOnce(true); // .cursorrules exists
+      mockedFs.existsSync.mockImplementation((path) => {
+        const pathStr = path.toString();
+        if (pathStr === '/custom/guides') {
+          return true; // custom guides folder exists
+        }
+        if (pathStr.includes('developmentGuide.md')) {
+          return true; // developmentGuide.md exists
+        }
+        if (pathStr.includes('.cursorrules')) {
+          return true; // .cursorrules exists
+        }
+        return false;
+      });
       mockedFs.statSync.mockReturnValue({
         isDirectory: () => true,
       } as any);
@@ -300,9 +316,19 @@ describe('GuideDiscoveryService', () => {
       const guidePath = '/test/guide';
 
       // Mock file system operations
-      mockedFs.existsSync
-        .mockReturnValueOnce(true) // guide folder exists
-        .mockReturnValueOnce(true); // developmentGuide.md exists
+      mockedFs.existsSync.mockImplementation((path) => {
+        const pathStr = path.toString();
+        if (pathStr === '/test/guide') {
+          return true; // guide folder exists
+        }
+        if (pathStr.includes('developmentGuide.md')) {
+          return true; // developmentGuide.md exists
+        }
+        if (pathStr.includes('.cursorrules')) {
+          return false; // .cursorrules does not exist
+        }
+        return false;
+      });
       mockedFs.statSync.mockReturnValue({
         isDirectory: () => true,
       } as any);

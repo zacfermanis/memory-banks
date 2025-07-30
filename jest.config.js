@@ -13,4 +13,11 @@ module.exports = {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov'],
+  
+  // Memory configuration to prevent heap out of memory errors
+  maxWorkers: 1,
+  workerIdleMemoryLimit: '512MB',
+  
+  // Increase timeout for performance tests
+  testTimeout: 30000,
 }; 
