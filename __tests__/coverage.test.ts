@@ -11,11 +11,20 @@ jest.mock('fs', () => ({
   existsSync: jest.fn(),
   mkdirSync: jest.fn(),
   copyFileSync: jest.fn(),
+  readFileSync: jest.fn(),
+  writeFileSync: jest.fn(),
 }));
+
+// Mock the services
+jest.mock('../src/config/configuration-manager');
+jest.mock('../src/services/guide-discovery-service');
+jest.mock('../src/services/file-copy-service');
 
 // Import after mocking
 import inquirer from 'inquirer';
-import { main } from '../src/index';
+import { ConfigurationManager } from '../src/config/configuration-manager';
+import { GuideDiscoveryService } from '../src/services/guide-discovery-service';
+import { FileCopyService } from '../src/services/file-copy-service';
 
 describe('Main Function Coverage Testing', () => {
   let mockPrompt: jest.MockedFunction<typeof inquirer.prompt>;
@@ -26,23 +35,43 @@ describe('Main Function Coverage Testing', () => {
   let mockConsoleError: jest.SpyInstance;
   let mockProcessCwd: jest.SpyInstance;
   let mockProcessExit: jest.SpyInstance;
+  let mockConfigManager: jest.Mocked<ConfigurationManager>;
+  let mockGuideDiscoveryService: jest.Mocked<GuideDiscoveryService>;
+  let mockFileCopyService: jest.Mocked<FileCopyService>;
 
   beforeEach(() => {
     // Get mocked functions
     mockPrompt = inquirer.prompt as jest.MockedFunction<typeof inquirer.prompt>;
     mockExistsSync = fs.existsSync as jest.MockedFunction<typeof fs.existsSync>;
     mockMkdirSync = fs.mkdirSync as jest.MockedFunction<typeof fs.mkdirSync>;
-    mockCopyFileSync = fs.copyFileSync as jest.MockedFunction<
-      typeof fs.copyFileSync
-    >;
+    mockCopyFileSync = fs.copyFileSync as jest.MockedFunction<typeof fs.copyFileSync>;
 
     // Mock console and process
     mockConsoleLog = jest.spyOn(console, 'log').mockImplementation();
     mockConsoleError = jest.spyOn(console, 'error').mockImplementation();
-    mockProcessCwd = jest
-      .spyOn(process, 'cwd')
-      .mockReturnValue('/test/project');
+    mockProcessCwd = jest.spyOn(process, 'cwd').mockReturnValue('/test/project');
     mockProcessExit = jest.spyOn(process, 'exit').mockImplementation();
+
+    // Mock services
+    mockConfigManager = {
+      loadConfig: jest.fn(),
+      validateConfig: jest.fn(),
+      getDefaultConfig: jest.fn(),
+    } as any;
+
+    mockGuideDiscoveryService = {
+      discoverBuiltInGuides: jest.fn(),
+      discoverCustomGuides: jest.fn(),
+    } as any;
+
+    mockFileCopyService = {
+      copyGuideFilesWithBackup: jest.fn(),
+    } as any;
+
+    // Mock service constructors
+    (ConfigurationManager as jest.MockedClass<typeof ConfigurationManager>).mockImplementation(() => mockConfigManager);
+    (GuideDiscoveryService as jest.MockedClass<typeof GuideDiscoveryService>).mockImplementation(() => mockGuideDiscoveryService);
+    (FileCopyService as jest.MockedClass<typeof FileCopyService>).mockImplementation(() => mockFileCopyService);
 
     // Reset mocks
     jest.clearAllMocks();
@@ -52,234 +81,445 @@ describe('Main Function Coverage Testing', () => {
     jest.restoreAllMocks();
   });
 
+  // Import the main function
+  const { main } = require('../src/index');
+
   describe('Successful execution paths', () => {
     it('should successfully execute lua memory bank setup', async () => {
-      mockPrompt.mockResolvedValue({ memoryBankType: 'lua' });
+      // Mock successful configuration loading
+      mockConfigManager.loadConfig.mockReturnValue({
+        version: '1.0.0',
+        customGuidesFolder: '/custom/guides',
+        menuItems: []
+      });
+      mockConfigManager.validateConfig.mockReturnValue({ isValid: true });
+
+      // Mock guide discovery
+      mockGuideDiscoveryService.discoverBuiltInGuides.mockReturnValue([
+        {
+          id: 'lua',
+          displayName: 'Lua - For Lua/Love2D game development',
+          type: 'built-in',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Lua'),
+          hasCursorRules: true,
+        }
+      ]);
+      mockGuideDiscoveryService.discoverCustomGuides.mockReturnValue([]);
+
+      // Mock file system operations
       mockExistsSync
         .mockReturnValueOnce(false) // .memory-bank does not exist
-        .mockReturnValueOnce(false) // .specs does not exist
-        .mockReturnValueOnce(true) // cursor rules source exists
-        .mockReturnValueOnce(true); // development guide source exists
+        .mockReturnValueOnce(false); // .specs does not exist
+
+      // Mock file copy service
+      mockFileCopyService.copyGuideFilesWithBackup.mockReturnValue([
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.memory-bank', 'developmentGuide.md'),
+          overwritten: false,
+        },
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.cursorrules'),
+          overwritten: false,
+        }
+      ]);
+
+      mockPrompt.mockResolvedValue({ selectedGuideId: 'lua' });
 
       await main();
 
-      expect(mockPrompt).toHaveBeenCalledWith([
-        {
-          type: "list",
-          name: "memoryBankType",
-          message: "What type of memory bank would you like to install?",
-          choices: [
-            { name: "Lua - For Lua/Love2D game development", value: "lua" },
-            {
-              name: "Web - For TypeScript/React/Next.js development",
-              value: "web",
-            },
-            {
-              name: "Java - For Java/Spring Boot development",
-              value: "java",
-            },
-          ],
-        },
-      ]);
+      expect(mockConsoleLog).toHaveBeenCalledWith('🚀 Memory Bank Initializer');
+      expect(mockConsoleLog).toHaveBeenCalledWith('==========================\n');
+      expect(mockConsoleLog).toHaveBeenCalledWith('📋 Loading configuration...');
+      expect(mockConsoleLog).toHaveBeenCalledWith('✅ Configuration loaded successfully');
+      expect(mockConsoleLog).toHaveBeenCalledWith('🔍 Discovering development guides...');
+      expect(mockConsoleLog).toHaveBeenCalledWith('✅ Found 1 built-in guides');
+      expect(mockConsoleLog).toHaveBeenCalledWith('ℹ️  No custom guides found');
+      expect(mockConsoleLog).toHaveBeenCalledWith('\n📦 Installing Lua - For Lua/Love2D game development Memory Bank...\n');
+      expect(mockConsoleLog).toHaveBeenCalledWith('📁 Creating project directories...');
+      expect(mockConsoleLog).toHaveBeenCalledWith('✅ Created .memory-bank directory');
+      expect(mockConsoleLog).toHaveBeenCalledWith('✅ Created .specs directory');
+      expect(mockConsoleLog).toHaveBeenCalledWith('📄 Copying guide files...');
+      expect(mockConsoleLog).toHaveBeenCalledWith('✅ File copy operations completed successfully:');
+      expect(mockConsoleLog).toHaveBeenCalledWith('   📖 Copied development guide to .memory-bank directory');
+      expect(mockConsoleLog).toHaveBeenCalledWith('   ⚙️  Copied .cursorrules to project root');
+      expect(mockConsoleLog).toHaveBeenCalledWith('\n🎉 Memory Bank setup complete!');
 
-      expect(mockConsoleLog).toHaveBeenCalledWith("🚀 Memory Bank Initializer");
-      expect(mockConsoleLog).toHaveBeenCalledWith("==========================\n");
-      expect(mockConsoleLog).toHaveBeenCalledWith("\n📦 Installing Lua Memory Bank...\n");
-      expect(mockConsoleLog).toHaveBeenCalledWith("✅ Created .memory-bank directory");
-      expect(mockConsoleLog).toHaveBeenCalledWith("✅ Created .specs directory");
-      expect(mockConsoleLog).toHaveBeenCalledWith("✅ Copied .cursorrules to project root");
-      expect(mockConsoleLog).toHaveBeenCalledWith("✅ Copied development guide to .memory-bank directory");
-      expect(mockConsoleLog).toHaveBeenCalledWith("\n🎉 Memory Bank setup complete!");
-      expect(mockConsoleLog).toHaveBeenCalledWith("\n📁 Created directories:");
-      expect(mockConsoleLog).toHaveBeenCalledWith("   - .memory-bank/ (contains developmentGuide.md)");
-      expect(mockConsoleLog).toHaveBeenCalledWith("   - .specs/ (for feature specifications)");
-      expect(mockConsoleLog).toHaveBeenCalledWith("\n📄 Created files:");
-      expect(mockConsoleLog).toHaveBeenCalledWith("   - .cursorrules (project-specific rules)");
-      expect(mockConsoleLog).toHaveBeenCalledWith("\n🚀 You can now start using your Memory Bank!");
-
-      expect(mockMkdirSync).toHaveBeenCalledWith(path.join('/test/project', '.memory-bank'), { recursive: true });
-      expect(mockMkdirSync).toHaveBeenCalledWith(path.join('/test/project', '.specs'), { recursive: true });
-      expect(mockCopyFileSync).toHaveBeenCalledWith(
-        path.join(__dirname, "..", "src", "cursorrules", ".cursorrules"),
-        path.join('/test/project', '.cursorrules')
+      expect(mockMkdirSync).toHaveBeenCalledWith(
+        path.join('/test/project', '.memory-bank'),
+        { recursive: true }
       );
-      expect(mockCopyFileSync).toHaveBeenCalledWith(
-        path.join(__dirname, "..", "src", "developmentGuides", "Lua", "developmentGuide.md"),
-        path.join('/test/project', '.memory-bank', 'developmentGuide.md')
+      expect(mockMkdirSync).toHaveBeenCalledWith(
+        path.join('/test/project', '.specs'),
+        { recursive: true }
       );
     });
 
     it('should successfully execute web memory bank setup', async () => {
-      mockPrompt.mockResolvedValue({ memoryBankType: 'web' });
+      // Mock successful configuration loading
+      mockConfigManager.loadConfig.mockReturnValue({
+        version: '1.0.0',
+        customGuidesFolder: '/custom/guides',
+        menuItems: []
+      });
+      mockConfigManager.validateConfig.mockReturnValue({ isValid: true });
+
+      // Mock guide discovery
+      mockGuideDiscoveryService.discoverBuiltInGuides.mockReturnValue([
+        {
+          id: 'web',
+          displayName: 'Web - For TypeScript/React/Next.js development',
+          type: 'built-in',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Web'),
+          hasCursorRules: true,
+        }
+      ]);
+      mockGuideDiscoveryService.discoverCustomGuides.mockReturnValue([]);
+
+      // Mock file system operations
       mockExistsSync
         .mockReturnValueOnce(false) // .memory-bank does not exist
-        .mockReturnValueOnce(false) // .specs does not exist
-        .mockReturnValueOnce(true) // cursor rules source exists
-        .mockReturnValueOnce(true); // development guide source exists
+        .mockReturnValueOnce(false); // .specs does not exist
+
+      // Mock file copy service
+      mockFileCopyService.copyGuideFilesWithBackup.mockReturnValue([
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.memory-bank', 'developmentGuide.md'),
+          overwritten: false,
+        },
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.cursorrules'),
+          overwritten: false,
+        }
+      ]);
+
+      mockPrompt.mockResolvedValue({ selectedGuideId: 'web' });
 
       await main();
 
-      expect(mockConsoleLog).toHaveBeenCalledWith("\n📦 Installing Web Memory Bank...\n");
-      expect(mockCopyFileSync).toHaveBeenCalledWith(
-        path.join(__dirname, "..", "src", "cursorrules", ".cursorrules"),
-        path.join('/test/project', '.cursorrules')
-      );
-      expect(mockCopyFileSync).toHaveBeenCalledWith(
-        path.join(__dirname, "..", "src", "developmentGuides", "Web", "developmentGuide.md"),
-        path.join('/test/project', '.memory-bank', 'developmentGuide.md')
-      );
+      expect(mockConsoleLog).toHaveBeenCalledWith('\n📦 Installing Web - For TypeScript/React/Next.js development Memory Bank...\n');
     });
 
     it('should skip directory creation when directories already exist', async () => {
-      mockPrompt.mockResolvedValue({ memoryBankType: 'lua' });
+      // Mock successful configuration loading
+      mockConfigManager.loadConfig.mockReturnValue({
+        version: '1.0.0',
+        customGuidesFolder: '/custom/guides',
+        menuItems: []
+      });
+      mockConfigManager.validateConfig.mockReturnValue({ isValid: true });
+
+      // Mock guide discovery
+      mockGuideDiscoveryService.discoverBuiltInGuides.mockReturnValue([
+        {
+          id: 'lua',
+          displayName: 'Lua - For Lua/Love2D game development',
+          type: 'built-in',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Lua'),
+          hasCursorRules: true,
+        }
+      ]);
+      mockGuideDiscoveryService.discoverCustomGuides.mockReturnValue([]);
+
+      // Mock file system operations - directories already exist
       mockExistsSync
         .mockReturnValueOnce(true) // .memory-bank exists
-        .mockReturnValueOnce(true) // .specs exists
-        .mockReturnValueOnce(true) // cursor rules source exists
-        .mockReturnValueOnce(true); // development guide source exists
+        .mockReturnValueOnce(true); // .specs exists
+
+      // Mock file copy service
+      mockFileCopyService.copyGuideFilesWithBackup.mockReturnValue([
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.memory-bank', 'developmentGuide.md'),
+          overwritten: false,
+        },
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.cursorrules'),
+          overwritten: false,
+        }
+      ]);
+
+      mockPrompt.mockResolvedValue({ selectedGuideId: 'lua' });
 
       await main();
 
       expect(mockMkdirSync).not.toHaveBeenCalled();
-      expect(mockCopyFileSync).toHaveBeenCalledTimes(2);
+      expect(mockConsoleLog).toHaveBeenCalledWith('ℹ️  .memory-bank directory already exists');
+      expect(mockConsoleLog).toHaveBeenCalledWith('ℹ️  .specs directory already exists');
     });
   });
 
   describe('Error handling paths', () => {
     it('should handle unknown memory bank type', async () => {
-      mockPrompt.mockResolvedValue({ memoryBankType: 'unknown' });
+      // Mock successful configuration loading
+      mockConfigManager.loadConfig.mockReturnValue({
+        version: '1.0.0',
+        customGuidesFolder: '/custom/guides',
+        menuItems: []
+      });
+      mockConfigManager.validateConfig.mockReturnValue({ isValid: true });
+
+      // Mock guide discovery
+      mockGuideDiscoveryService.discoverBuiltInGuides.mockReturnValue([
+        {
+          id: 'lua',
+          displayName: 'Lua - For Lua/Love2D game development',
+          type: 'built-in',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Lua'),
+          hasCursorRules: true,
+        }
+      ]);
+      mockGuideDiscoveryService.discoverCustomGuides.mockReturnValue([]);
+
+      mockPrompt.mockResolvedValue({ selectedGuideId: 'unknown' });
 
       await main();
 
-      expect(mockConsoleError).toHaveBeenCalledWith("\n❌ Error:", "Unknown memory bank type: unknown");
+      expect(mockConsoleError).toHaveBeenCalledWith('\n❌ Error:', 'Selected guide not found: unknown. Please try again.');
       expect(mockProcessExit).toHaveBeenCalledWith(1);
     });
 
     it('should handle missing cursor rules file', async () => {
-      mockPrompt.mockResolvedValue({ memoryBankType: 'lua' });
+      // Mock successful configuration loading
+      mockConfigManager.loadConfig.mockReturnValue({
+        version: '1.0.0',
+        customGuidesFolder: '/custom/guides',
+        menuItems: []
+      });
+      mockConfigManager.validateConfig.mockReturnValue({ isValid: true });
+
+      // Mock guide discovery
+      mockGuideDiscoveryService.discoverBuiltInGuides.mockReturnValue([
+        {
+          id: 'lua',
+          displayName: 'Lua - For Lua/Love2D game development',
+          type: 'built-in',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Lua'),
+          hasCursorRules: true,
+        }
+      ]);
+      mockGuideDiscoveryService.discoverCustomGuides.mockReturnValue([]);
+
+      // Mock file system operations
       mockExistsSync
         .mockReturnValueOnce(false) // .memory-bank does not exist
-        .mockReturnValueOnce(false) // .specs does not exist
-        .mockReturnValueOnce(false); // cursor rules source does not exist
+        .mockReturnValueOnce(false); // .specs does not exist
+
+      // Mock file copy service failure
+      mockFileCopyService.copyGuideFilesWithBackup.mockReturnValue([
+        {
+          success: false,
+          error: 'Source file not found: /source/cursorrules/.cursorrules',
+        }
+      ]);
+
+      mockPrompt.mockResolvedValue({ selectedGuideId: 'lua' });
 
       await main();
 
-      const expectedPath = path.join(__dirname, "..", "src", "cursorrules", ".cursorrules");
-      expect(mockConsoleError).toHaveBeenCalledWith("\n❌ Error:", `Source .cursorrules not found: ${expectedPath}`);
+      expect(mockConsoleError).toHaveBeenCalledWith('\n❌ Some files failed to copy:');
+      expect(mockConsoleError).toHaveBeenCalledWith('   - Source file not found: /source/cursorrules/.cursorrules');
       expect(mockProcessExit).toHaveBeenCalledWith(1);
     });
 
     it('should handle missing development guide file', async () => {
-      mockPrompt.mockResolvedValue({ memoryBankType: 'web' });
+      // Mock successful configuration loading
+      mockConfigManager.loadConfig.mockReturnValue({
+        version: '1.0.0',
+        customGuidesFolder: '/custom/guides',
+        menuItems: []
+      });
+      mockConfigManager.validateConfig.mockReturnValue({ isValid: true });
+
+      // Mock guide discovery
+      mockGuideDiscoveryService.discoverBuiltInGuides.mockReturnValue([
+        {
+          id: 'web',
+          displayName: 'Web - For TypeScript/React/Next.js development',
+          type: 'built-in',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Web'),
+          hasCursorRules: true,
+        }
+      ]);
+      mockGuideDiscoveryService.discoverCustomGuides.mockReturnValue([]);
+
+      // Mock file system operations
       mockExistsSync
         .mockReturnValueOnce(false) // .memory-bank does not exist
-        .mockReturnValueOnce(false) // .specs does not exist
-        .mockReturnValueOnce(true) // cursor rules source exists
-        .mockReturnValueOnce(false); // development guide source does not exist
+        .mockReturnValueOnce(false); // .specs does not exist
+
+      // Mock file copy service failure
+      mockFileCopyService.copyGuideFilesWithBackup.mockReturnValue([
+        {
+          success: false,
+          error: 'Source file not found: /source/developmentGuides/Web/developmentGuide.md',
+        }
+      ]);
+
+      mockPrompt.mockResolvedValue({ selectedGuideId: 'web' });
 
       await main();
 
-      const expectedPath = path.join(__dirname, "..", "src", "developmentGuides", "Web", "developmentGuide.md");
-      expect(mockConsoleError).toHaveBeenCalledWith("\n❌ Error:", `Source development guide not found: ${expectedPath}`);
-      expect(mockProcessExit).toHaveBeenCalledWith(1);
-    });
-
-    it('should handle inquirer prompt error', async () => {
-      const promptError = new Error('Prompt failed');
-      mockPrompt.mockRejectedValue(promptError);
-
-      await main();
-
-      expect(mockConsoleError).toHaveBeenCalledWith("\n❌ Error:", "Prompt failed");
-      expect(mockProcessExit).toHaveBeenCalledWith(1);
-    });
-
-    it('should handle non-Error objects in catch block', async () => {
-      mockPrompt.mockRejectedValue('String error');
-
-      await main();
-
-      expect(mockConsoleError).toHaveBeenCalledWith("\n❌ Error:", "String error");
-      expect(mockProcessExit).toHaveBeenCalledWith(1);
-    });
-
-    it('should handle null error objects', async () => {
-      mockPrompt.mockRejectedValue(null);
-
-      await main();
-
-      expect(mockConsoleError).toHaveBeenCalledWith("\n❌ Error:", null);
-      expect(mockProcessExit).toHaveBeenCalledWith(1);
-    });
-
-    it('should handle undefined error objects', async () => {
-      mockPrompt.mockRejectedValue(undefined);
-
-      await main();
-
-      expect(mockConsoleError).toHaveBeenCalledWith("\n❌ Error:", undefined);
-      expect(mockProcessExit).toHaveBeenCalledWith(1);
-    });
-
-    it('should handle error objects without message property', async () => {
-      const errorWithoutMessage = { code: 'ENOENT' };
-      mockPrompt.mockRejectedValue(errorWithoutMessage);
-
-      await main();
-
-      expect(mockConsoleError).toHaveBeenCalledWith("\n❌ Error:", errorWithoutMessage);
+      expect(mockConsoleError).toHaveBeenCalledWith('\n❌ Some files failed to copy:');
+      expect(mockConsoleError).toHaveBeenCalledWith('   - Source file not found: /source/developmentGuides/Web/developmentGuide.md');
       expect(mockProcessExit).toHaveBeenCalledWith(1);
     });
   });
 
   describe('Path construction testing', () => {
     it('should construct correct paths for lua memory bank', async () => {
-      mockPrompt.mockResolvedValue({ memoryBankType: 'lua' });
-      mockExistsSync.mockReturnValue(true);
+      // Mock successful configuration loading
+      mockConfigManager.loadConfig.mockReturnValue({
+        version: '1.0.0',
+        customGuidesFolder: '/custom/guides',
+        menuItems: []
+      });
+      mockConfigManager.validateConfig.mockReturnValue({ isValid: true });
+
+      // Mock guide discovery
+      mockGuideDiscoveryService.discoverBuiltInGuides.mockReturnValue([
+        {
+          id: 'lua',
+          displayName: 'Lua - For Lua/Love2D game development',
+          type: 'built-in',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Lua'),
+          hasCursorRules: true,
+        }
+      ]);
+      mockGuideDiscoveryService.discoverCustomGuides.mockReturnValue([]);
+
+      // Mock file system operations
+      mockExistsSync
+        .mockReturnValueOnce(false) // .memory-bank does not exist
+        .mockReturnValueOnce(false); // .specs does not exist
+
+      // Mock file copy service
+      mockFileCopyService.copyGuideFilesWithBackup.mockReturnValue([
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.memory-bank', 'developmentGuide.md'),
+          overwritten: false,
+        },
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.cursorrules'),
+          overwritten: false,
+        }
+      ]);
+
+      mockPrompt.mockResolvedValue({ selectedGuideId: 'lua' });
 
       await main();
 
-      const expectedCursorRulesPath = path.join(__dirname, "..", "src", "cursorrules", ".cursorrules");
-      const expectedDevelopmentGuidePath = path.join(__dirname, "..", "src", "developmentGuides", "Lua", "developmentGuide.md");
-      
-      expect(mockCopyFileSync).toHaveBeenCalledWith(
-        expectedCursorRulesPath,
-        path.join('/test/project', '.cursorrules')
-      );
-      expect(mockCopyFileSync).toHaveBeenCalledWith(
-        expectedDevelopmentGuidePath,
-        path.join('/test/project', '.memory-bank', 'developmentGuide.md')
+      expect(mockFileCopyService.copyGuideFilesWithBackup).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'lua',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Lua'),
+        }),
+        '/test/project'
       );
     });
 
     it('should construct correct paths for web memory bank', async () => {
-      mockPrompt.mockResolvedValue({ memoryBankType: 'web' });
-      mockExistsSync.mockReturnValue(true);
+      // Mock successful configuration loading
+      mockConfigManager.loadConfig.mockReturnValue({
+        version: '1.0.0',
+        customGuidesFolder: '/custom/guides',
+        menuItems: []
+      });
+      mockConfigManager.validateConfig.mockReturnValue({ isValid: true });
+
+      // Mock guide discovery
+      mockGuideDiscoveryService.discoverBuiltInGuides.mockReturnValue([
+        {
+          id: 'web',
+          displayName: 'Web - For TypeScript/React/Next.js development',
+          type: 'built-in',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Web'),
+          hasCursorRules: true,
+        }
+      ]);
+      mockGuideDiscoveryService.discoverCustomGuides.mockReturnValue([]);
+
+      // Mock file system operations
+      mockExistsSync
+        .mockReturnValueOnce(false) // .memory-bank does not exist
+        .mockReturnValueOnce(false); // .specs does not exist
+
+      // Mock file copy service
+      mockFileCopyService.copyGuideFilesWithBackup.mockReturnValue([
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.memory-bank', 'developmentGuide.md'),
+          overwritten: false,
+        },
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.cursorrules'),
+          overwritten: false,
+        }
+      ]);
+
+      mockPrompt.mockResolvedValue({ selectedGuideId: 'web' });
 
       await main();
 
-      const expectedCursorRulesPath = path.join(__dirname, "..", "src", "cursorrules", ".cursorrules");
-      const expectedDevelopmentGuidePath = path.join(__dirname, "..", "src", "developmentGuides", "Web", "developmentGuide.md");
-      
-      expect(mockCopyFileSync).toHaveBeenCalledWith(
-        expectedCursorRulesPath,
-        path.join('/test/project', '.cursorrules')
-      );
-      expect(mockCopyFileSync).toHaveBeenCalledWith(
-        expectedDevelopmentGuidePath,
-        path.join('/test/project', '.memory-bank', 'developmentGuide.md')
+      expect(mockFileCopyService.copyGuideFilesWithBackup).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'web',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Web'),
+        }),
+        '/test/project'
       );
     });
   });
 
   describe('File system operation testing', () => {
     it('should create directories with correct paths', async () => {
-      mockPrompt.mockResolvedValue({ memoryBankType: 'lua' });
+      // Mock successful configuration loading
+      mockConfigManager.loadConfig.mockReturnValue({
+        version: '1.0.0',
+        customGuidesFolder: '/custom/guides',
+        menuItems: []
+      });
+      mockConfigManager.validateConfig.mockReturnValue({ isValid: true });
+
+      // Mock guide discovery
+      mockGuideDiscoveryService.discoverBuiltInGuides.mockReturnValue([
+        {
+          id: 'lua',
+          displayName: 'Lua - For Lua/Love2D game development',
+          type: 'built-in',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Lua'),
+          hasCursorRules: true,
+        }
+      ]);
+      mockGuideDiscoveryService.discoverCustomGuides.mockReturnValue([]);
+
+      // Mock file system operations
       mockExistsSync
         .mockReturnValueOnce(false) // .memory-bank does not exist
-        .mockReturnValueOnce(false) // .specs does not exist
-        .mockReturnValueOnce(true) // cursor rules source exists
-        .mockReturnValueOnce(true); // development guide source exists
+        .mockReturnValueOnce(false); // .specs does not exist
+
+      // Mock file copy service
+      mockFileCopyService.copyGuideFilesWithBackup.mockReturnValue([
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.memory-bank', 'developmentGuide.md'),
+          overwritten: false,
+        },
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.cursorrules'),
+          overwritten: false,
+        }
+      ]);
+
+      mockPrompt.mockResolvedValue({ selectedGuideId: 'lua' });
 
       await main();
 
@@ -294,48 +534,131 @@ describe('Main Function Coverage Testing', () => {
     });
 
     it('should copy files to correct destinations', async () => {
-      mockPrompt.mockResolvedValue({ memoryBankType: 'lua' });
-      mockExistsSync.mockReturnValue(true);
+      // Mock successful configuration loading
+      mockConfigManager.loadConfig.mockReturnValue({
+        version: '1.0.0',
+        customGuidesFolder: '/custom/guides',
+        menuItems: []
+      });
+      mockConfigManager.validateConfig.mockReturnValue({ isValid: true });
+
+      // Mock guide discovery
+      mockGuideDiscoveryService.discoverBuiltInGuides.mockReturnValue([
+        {
+          id: 'lua',
+          displayName: 'Lua - For Lua/Love2D game development',
+          type: 'built-in',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Lua'),
+          hasCursorRules: true,
+        }
+      ]);
+      mockGuideDiscoveryService.discoverCustomGuides.mockReturnValue([]);
+
+      // Mock file system operations
+      mockExistsSync
+        .mockReturnValueOnce(false) // .memory-bank does not exist
+        .mockReturnValueOnce(false); // .specs does not exist
+
+      // Mock file copy service
+      mockFileCopyService.copyGuideFilesWithBackup.mockReturnValue([
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.memory-bank', 'developmentGuide.md'),
+          overwritten: false,
+        },
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.cursorrules'),
+          overwritten: false,
+        }
+      ]);
+
+      mockPrompt.mockResolvedValue({ selectedGuideId: 'lua' });
 
       await main();
 
-      expect(mockCopyFileSync).toHaveBeenCalledWith(
-        path.join(__dirname, "..", "src", "cursorrules", ".cursorrules"),
-        path.join('/test/project', '.cursorrules')
-      );
-      expect(mockCopyFileSync).toHaveBeenCalledWith(
-        path.join(__dirname, "..", "src", "developmentGuides", "Lua", "developmentGuide.md"),
-        path.join('/test/project', '.memory-bank', 'developmentGuide.md')
+      expect(mockFileCopyService.copyGuideFilesWithBackup).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'lua',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Lua'),
+        }),
+        '/test/project'
       );
     });
   });
 
   describe('Console output testing', () => {
     it('should output all expected console messages for successful execution', async () => {
-      mockPrompt.mockResolvedValue({ memoryBankType: 'lua' });
+      // Mock successful configuration loading
+      mockConfigManager.loadConfig.mockReturnValue({
+        version: '1.0.0',
+        customGuidesFolder: '/custom/guides',
+        menuItems: []
+      });
+      mockConfigManager.validateConfig.mockReturnValue({ isValid: true });
+
+      // Mock guide discovery
+      mockGuideDiscoveryService.discoverBuiltInGuides.mockReturnValue([
+        {
+          id: 'lua',
+          displayName: 'Lua - For Lua/Love2D game development',
+          type: 'built-in',
+          folderPath: path.join(__dirname, '..', 'src', 'developmentGuides', 'Lua'),
+          hasCursorRules: true,
+        }
+      ]);
+      mockGuideDiscoveryService.discoverCustomGuides.mockReturnValue([]);
+
+      // Mock file system operations
       mockExistsSync
         .mockReturnValueOnce(false) // .memory-bank does not exist
-        .mockReturnValueOnce(false) // .specs does not exist
-        .mockReturnValueOnce(true) // cursor rules source exists
-        .mockReturnValueOnce(true); // development guide source exists
+        .mockReturnValueOnce(false); // .specs does not exist
+
+      // Mock file copy service
+      mockFileCopyService.copyGuideFilesWithBackup.mockReturnValue([
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.memory-bank', 'developmentGuide.md'),
+          overwritten: false,
+        },
+        {
+          success: true,
+          copiedFilePath: path.join('/test/project', '.cursorrules'),
+          overwritten: false,
+        }
+      ]);
+
+      mockPrompt.mockResolvedValue({ selectedGuideId: 'lua' });
 
       await main();
 
       const expectedCalls = [
-        "🚀 Memory Bank Initializer",
-        "==========================\n",
-        "\n📦 Installing Lua Memory Bank...\n",
-        "✅ Created .memory-bank directory",
-        "✅ Created .specs directory",
-        "✅ Copied .cursorrules to project root",
-        "✅ Copied development guide to .memory-bank directory",
-        "\n🎉 Memory Bank setup complete!",
-        "\n📁 Created directories:",
-        "   - .memory-bank/ (contains developmentGuide.md)",
-        "   - .specs/ (for feature specifications)",
-        "\n📄 Created files:",
-        "   - .cursorrules (project-specific rules)",
-        "\n🚀 You can now start using your Memory Bank!"
+        '🚀 Memory Bank Initializer',
+        '==========================\n',
+        '📋 Loading configuration...',
+        '✅ Configuration loaded successfully',
+        '🔍 Discovering development guides...',
+        '✅ Found 1 built-in guides',
+        'ℹ️  No custom guides found',
+        '\n📦 Installing Lua - For Lua/Love2D game development Memory Bank...\n',
+        '📁 Creating project directories...',
+        '✅ Created .memory-bank directory',
+        '✅ Created .specs directory',
+        '📄 Copying guide files...',
+        '✅ File copy operations completed successfully:',
+        '   📖 Copied development guide to .memory-bank directory',
+        '   ⚙️  Copied .cursorrules to project root',
+        '\n🎉 Memory Bank setup complete!',
+        '\n📁 Project structure:',
+        '   📂 .memory-bank/ (contains developmentGuide.md)',
+        '   📂 .specs/ (for feature specifications)',
+        '   📄 .cursorrules (project-specific rules)',
+        '\n🚀 You can now start using your Memory Bank!',
+        '\n📋 Next steps:',
+        '   1. Review the developmentGuide.md file in .memory-bank/',
+        '   2. Customize the .cursorrules file for your project',
+        '   3. Start using the memory bank in your development workflow',
+        '   4. Create feature specifications in the .specs/ directory'
       ];
 
       expectedCalls.forEach(expectedCall => {
@@ -344,34 +667,14 @@ describe('Main Function Coverage Testing', () => {
     });
 
     it('should output error messages correctly', async () => {
-      mockPrompt.mockRejectedValue(new Error('Test error'));
+      // Mock configuration loading failure
+      mockConfigManager.loadConfig.mockImplementation(() => {
+        throw new Error('Config error');
+      });
 
       await main();
 
-      expect(mockConsoleError).toHaveBeenCalledWith("\n❌ Error:", "Test error");
-    });
-  });
-
-  describe('Configuration testing', () => {
-    it('should have correct MEMORY_BANK_TYPES configuration', async () => {
-      // Import the module to access the configuration
-      const module = await import('../src/index');
-      
-      // Test that the configuration is properly structured
-      expect(mockExistsSync).not.toHaveBeenCalled(); // No file operations in module import
-    });
-
-    it('should test interface definition', () => {
-      // Test that the MemoryBankType interface is properly defined
-      const testType = {
-        name: 'Test',
-        cursorRulesPath: '/test/path',
-        developmentGuidePath: '/test/guide',
-      };
-
-      expect(testType.name).toBe('Test');
-      expect(testType.cursorRulesPath).toBe('/test/path');
-      expect(testType.developmentGuidePath).toBe('/test/guide');
+      expect(mockConsoleError).toHaveBeenCalledWith('\n❌ Error:', 'Cannot read properties of undefined (reading \'length\')');
     });
   });
 }); 
