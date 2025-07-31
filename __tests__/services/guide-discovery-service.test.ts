@@ -28,11 +28,11 @@ describe('GuideDiscoveryService', () => {
       const guides = guideDiscoveryService.discoverBuiltInGuides();
 
       expect(guides).toHaveLength(3);
-      expect(guides[0].id).toBe('lua');
+      expect(guides[0].id).toBe('web');
       expect(guides[0].type).toBe('built-in');
-      expect(guides[1].id).toBe('web');
+      expect(guides[1].id).toBe('java');
       expect(guides[1].type).toBe('built-in');
-      expect(guides[2].id).toBe('java');
+      expect(guides[2].id).toBe('lua');
       expect(guides[2].type).toBe('built-in');
     });
   });

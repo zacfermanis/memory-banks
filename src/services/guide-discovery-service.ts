@@ -17,20 +17,6 @@ export class GuideDiscoveryService {
   discoverBuiltInGuides(): GuideInfo[] {
     return [
       {
-        id: 'lua',
-        displayName: 'Lua - For Lua/Love2D game development',
-        type: 'built-in',
-        folderPath: path.join(
-          __dirname,
-          '..',
-          '..',
-          'src',
-          'developmentGuides',
-          'Lua'
-        ),
-        hasCursorRules: true,
-      },
-      {
         id: 'web',
         displayName: 'Web - For TypeScript/React/Next.js development',
         type: 'built-in',
@@ -55,6 +41,20 @@ export class GuideDiscoveryService {
           'src',
           'developmentGuides',
           'Java'
+        ),
+        hasCursorRules: true,
+      },
+      {
+        id: 'lua',
+        displayName: 'Lua - For Lua/Love2D game development',
+        type: 'built-in',
+        folderPath: path.join(
+          __dirname,
+          '..',
+          '..',
+          'src',
+          'developmentGuides',
+          'Lua'
         ),
         hasCursorRules: true,
       },

@@ -1,6 +1,6 @@
 {
   "name": "@zacfermanis/memory-bank",
-  "version": "2.2.3",
+  "version": "2.2.4",
   "description": "A CLI tool to initialize memory bank projects with AI-powered development documentation and cursor rules for TypeScript/React, Lua/Love2D, and Java/Spring Boot development",
   "main": "dist/index.js",
   "bin": {
