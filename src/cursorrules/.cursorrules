@@ -178,11 +178,11 @@ flowchart TD
 ## Spec Integration with Memory Bank
 
 When working with specs:
-1. Update `memory-bank/activeContext.md` to reference current spec work
-2. Document spec patterns and learnings in `memory-bank/systemPatterns.md`
-3. Track task progress in its `.limu/specs/{feature_name}/tasks.md` file.
-3. Track overall feature progress in `memory-bank/progress.md`
-4. Maintain spec-related technical context in `memory-bank/techContext.md`
+1. Update `.memory-bank/activeContext.md` to reference current spec work
+2. Document spec patterns and learnings in `.memory-bank/systemPatterns.md`
+3. Track task progress in its `.specs/{feature_name}/tasks.md` file.
+3. Track overall feature progress in `.memory-bank/progress.md`
+4. Maintain spec-related technical context in `.memory-bank/techContext.md`
 
 ## Critical Workflow Rules
 
