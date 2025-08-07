@@ -1,4 +1,3 @@
-import inquirer from 'inquirer';
 import { ConfigurationManager } from '../config/configuration-manager';
 import { CustomGuideConfig, CustomMenuItem } from '../config/types';
 
@@ -32,6 +31,7 @@ export class ConfigureCommand {
   private async showMainMenu(config: CustomGuideConfig): Promise<void> {
     // eslint-disable-next-line no-constant-condition
     while (true) {
+      const { default: inquirer } = await import('inquirer');
       const { action } = await inquirer.prompt([
         {
           type: 'list',
@@ -69,6 +69,7 @@ export class ConfigureCommand {
   private async configureCustomGuidesFolder(
     config: CustomGuideConfig
   ): Promise<void> {
+    const { default: inquirer } = await import('inquirer');
     const { folderPath } = await inquirer.prompt([
       {
         type: 'input',
@@ -103,6 +104,7 @@ export class ConfigureCommand {
   private async manageMenuItems(config: CustomGuideConfig): Promise<void> {
     // eslint-disable-next-line no-constant-condition
     while (true) {
+      const { default: inquirer } = await import('inquirer');
       const { action } = await inquirer.prompt([
         {
           type: 'list',
@@ -137,6 +139,7 @@ export class ConfigureCommand {
    * Add a new menu item
    */
   private async addMenuItem(config: CustomGuideConfig): Promise<void> {
+    const { default: inquirer } = await import('inquirer');
     const { displayName, folderPath } = await inquirer.prompt([
       {
         type: 'input',
@@ -185,6 +188,7 @@ export class ConfigureCommand {
       return;
     }
 
+    const { default: inquirer } = await import('inquirer');
     const { selectedItem } = await inquirer.prompt([
       {
         type: 'list',
@@ -247,6 +251,7 @@ export class ConfigureCommand {
       return;
     }
 
+    const { default: inquirer } = await import('inquirer');
     const { selectedItem } = await inquirer.prompt([
       {
         type: 'list',
@@ -300,6 +305,7 @@ export class ConfigureCommand {
       });
     }
 
+    const { default: inquirer } = await import('inquirer');
     await inquirer.prompt([
       {
         type: 'list',

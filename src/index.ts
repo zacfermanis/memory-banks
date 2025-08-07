@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-
-import inquirer from 'inquirer';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ConfigurationManager } from './config/configuration-manager';
@@ -124,6 +122,9 @@ export async function main() {
       const prefix = choice.guide.type === 'custom' ? '🔧' : '📦';
       console.log(`   ${index + 1}. ${prefix} ${choice.name}`);
     });
+
+    // Dynamically import ESM-only inquirer to support CommonJS bundle
+    const { default: inquirer } = await import('inquirer');
 
     const { selectedGuideId } = await inquirer.prompt([
       {
